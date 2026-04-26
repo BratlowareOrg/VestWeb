@@ -128,11 +128,12 @@ const authSlice = createSlice({
       .addCase(loginThunk.fulfilled, (state, action: PayloadAction<{ user?: AuthUser; student?: AuthUser; token?: string }>) => {
         const nextUser = action.payload.user ?? action.payload.student ?? null;
         state.loading = false;
-        state.token = null;
+        state.token = action.payload.token ?? null;
         state.user = nextUser;
         state.authChecked = true;
         state.checkingSession = false;
         wipeLegacyAuthStorage();
+        if (action.payload.token) localStorage.setItem('vestweb_token', action.payload.token);
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.loading = false;
@@ -147,11 +148,12 @@ const authSlice = createSlice({
       .addCase(teacherLoginThunk.fulfilled, (state, action: PayloadAction<{ user?: AuthUser; student?: AuthUser; token?: string }>) => {
         const nextUser = action.payload.user ?? action.payload.student ?? null;
         state.loading = false;
-        state.token = null;
+        state.token = action.payload.token ?? null;
         state.user = nextUser;
         state.authChecked = true;
         state.checkingSession = false;
         wipeLegacyAuthStorage();
+        if (action.payload.token) localStorage.setItem('vestweb_token', action.payload.token);
       })
       .addCase(teacherLoginThunk.rejected, (state, action) => {
         state.loading = false;

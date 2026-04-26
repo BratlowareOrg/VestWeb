@@ -82,7 +82,7 @@ export const login = async (req, res) => {
 
     return res.json({
       message: 'Login successful',
-      data: { user: { ...student.toJSON(), type: 'student' } },
+      data: { user: { ...student.toJSON(), type: 'student' }, token },
     });
   } catch (error) {
     requestLogger.error({ err: error, event: 'auth_login_error' }, 'Login error');
@@ -119,7 +119,7 @@ export const teacherLogin = async (req, res) => {
 
     return res.json({
       message: 'Login successful',
-      data: { user: { ...teacher.toJSON(), type: 'teacher', role: 'teacher' } },
+      data: { user: { ...teacher.toJSON(), type: 'teacher', role: 'teacher' }, token },
     });
   } catch (error) {
     requestLogger.error({ err: error, event: 'auth_teacher_login_error' }, 'Teacher login error');
