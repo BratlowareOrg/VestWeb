@@ -209,28 +209,36 @@ const Questions = () => {
   const [finished, setFinished] = useState(false);
   const [highlightMode, setHighlightMode] = useState(false);
   const [highlights, setHighlights] = useState<HighlightRange[]>([]);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     dispatch(fetchSubjects());
     dispatch(fetchVestibulares());
   }, [dispatch]);
 
-  const handleSearch = async () => {
-    dispatch(fetchQuestions({ ...filters, limit: 200 }));
-    setCurrentIndex(0);
-    setSelectedAlt(null);
-    setAnswered(false);
-    setIsCorrect(null);
-    setFinished(false);
-    setScore({ correct: 0, total: 0 });
+  useEffect(() => {
+    const delay = isFirstRender.current ? 0 : 300;
+    isFirstRender.current = false;
 
-    try {
-      const res = await api.post('/questions/session');
-      setSessionId(res.data.data.id);
-    } catch {
-      setSessionId(null);
-    }
-  };
+    const timer = window.setTimeout(async () => {
+      dispatch(fetchQuestions({ ...filters, limit: 200 }));
+      setCurrentIndex(0);
+      setSelectedAlt(null);
+      setAnswered(false);
+      setIsCorrect(null);
+      setFinished(false);
+      setScore({ correct: 0, total: 0 });
+
+      try {
+        const res = await api.post('/questions/session');
+        setSessionId(res.data.data.id);
+      } catch {
+        setSessionId(null);
+      }
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [filters, dispatch]);
 
   const handleConfirm = async () => {
     if (selectedAlt === null) return;
@@ -392,9 +400,9 @@ const Questions = () => {
               </label>
             </div>
 
-            <button className="filter-btn" onClick={handleSearch} disabled={loading}>
-              {loading ? 'Buscando...' : 'Buscar questões'}
-            </button>
+            {loading && (
+              <p className="filter-searching" aria-live="polite">Buscando...</p>
+            )}
             {Object.values(filters).some(v => v !== '') && (
               <button
                 className="filter-clear-btn"

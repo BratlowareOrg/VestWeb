@@ -1,4 +1,4 @@
-.landing-header {
+﻿.landing-header {
   position: fixed;
   top: 0;
   left: 0;
@@ -48,8 +48,8 @@
 
 .landing-header-nav a {
   color: rgba(255, 255, 255, 0.75);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   padding: 6px 4px;
   border-radius: 0;
   text-decoration: none;
@@ -125,7 +125,7 @@
   height: 34px;
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   padding: 0;
@@ -168,7 +168,7 @@
 .landing-mobile-menu a {
   color: rgba(255, 255, 255, 0.85);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   padding: 12px 16px;
   border-radius: var(--radius);
   text-decoration: none;

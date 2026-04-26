@@ -1,4 +1,4 @@
-.checkout-overlay {
+﻿.checkout-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.65);
@@ -18,7 +18,7 @@
 
 .checkout-modal {
   background: var(--bg-primary, #fff);
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   padding: 2rem;
   width: 100%;
   max-width: 440px;
@@ -40,7 +40,7 @@
   right: 1rem;
   background: var(--bg-secondary, #f5f5f5);
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   width: 32px;
   height: 32px;
   display: flex;
@@ -66,10 +66,10 @@
 
 .checkout-plan-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #6c63ff, #4f46e5);
+  background: linear-gradient(135deg, #6c63ff, var(--primary-dark));
   color: #fff;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 0.25rem 0.75rem;
@@ -79,7 +79,7 @@
 
 .checkout-price {
   font-size: 1.75rem;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--text-primary, #111);
   line-height: 1.2;
 }
@@ -96,7 +96,7 @@
   background: #dcfce7;
   color: #15803d;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
 }
@@ -107,7 +107,7 @@
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   background: var(--bg-secondary, #f5f5f5);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 4px;
 }
 
@@ -115,10 +115,10 @@
   flex: 1;
   padding: 0.45rem 0.25rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: transparent;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--text-secondary, #666);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
@@ -130,13 +130,13 @@
 
 .checkout-billing-btn.active {
   background: var(--bg-primary, #fff);
-  color: #4f46e5;
+  color: var(--primary-dark);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .checkout-billing-badge {
   font-size: 0.65rem;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: #16a34a;
   background: #dcfce7;
   padding: 0 0.35rem;
@@ -159,14 +159,14 @@
 
 .checkout-field label {
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--text-primary, #111);
 }
 
 .checkout-field input {
   padding: 0.65rem 0.9rem;
   border: 1.5px solid var(--border-color, #ddd);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
   color: var(--text-primary, #111);
   background: var(--bg-primary, #fff);
@@ -177,7 +177,7 @@
 }
 
 .checkout-field input:focus {
-  border-color: #4f46e5;
+  border-color: var(--primary-dark);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -207,16 +207,16 @@
 
 .checkout-field-hint {
   font-size: 0.78rem;
-  color: #4f46e5;
-  font-weight: 600;
+  color: var(--primary-dark);
+  font-weight: var(--font-semibold);
 }
 
 .checkout-error {
   font-size: 0.82rem;
-  color: #dc2626;
+  color: var(--color-error);
   background: #fef2f2;
   border: 1px solid #fecaca;
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 0.5rem 0.75rem;
   margin: 0;
 }
@@ -228,12 +228,12 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.85rem 1.5rem;
-  background: linear-gradient(135deg, #6c63ff, #4f46e5);
+  background: linear-gradient(135deg, #6c63ff, var(--primary-dark));
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   cursor: pointer;
   transition: opacity 0.2s, transform 0.15s;
   margin-top: 0.25rem;
@@ -254,7 +254,7 @@
   height: 18px;
   border: 2.5px solid rgba(255, 255, 255, 0.35);
   border-top-color: #fff;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 0.7s linear infinite;
 }
 
@@ -287,11 +287,11 @@
   gap: 0.4rem;
   padding: 0.55rem 0;
   border: 2px solid var(--border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-secondary, #666);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
@@ -335,7 +335,7 @@
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1.5px solid var(--border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
   background: var(--bg-primary, #fff);
   color: var(--text-primary, #333);
@@ -352,7 +352,7 @@
 .checkout-field-optional {
   font-size: 0.75rem;
   color: var(--text-secondary, #999);
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .checkout-pix-note {
@@ -360,7 +360,7 @@
   color: var(--text-secondary, #888);
   background: color-mix(in srgb, var(--primary, #6c47ff) 6%, transparent);
   border: 1px solid color-mix(in srgb, var(--primary, #6c47ff) 20%, transparent);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 0.6rem 0.75rem;
   margin: 0 0 1rem;
   line-height: 1.5;

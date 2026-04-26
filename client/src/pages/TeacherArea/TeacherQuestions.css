@@ -1,4 +1,4 @@
-/* ── Page layout ─────────────────────────────────────────── */
+﻿/* ── Page layout ─────────────────────────────────────────── */
 .tqe-page {
   display: flex;
   flex-direction: column;
@@ -17,7 +17,7 @@
 
 .tqe-header h1 {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--text);
   margin: 0 0 4px;
 }
@@ -38,8 +38,8 @@
   color: #fff;
   border: none;
   border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   cursor: pointer;
   transition: var(--transition);
   white-space: nowrap;
@@ -54,8 +54,8 @@
   color: var(--primary);
   border: 2px solid var(--primary);
   border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   cursor: pointer;
   transition: var(--transition);
 }
@@ -73,8 +73,8 @@
 }
 
 .tqe-new-form h2 {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
   margin: 0 0 18px;
   color: var(--text);
 }
@@ -88,7 +88,7 @@
 
 .tqf-group label {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--text);
 }
 
@@ -137,7 +137,7 @@
 
 .tqf-alt-letter {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   width: 16px;
   flex-shrink: 0;
   color: var(--text-secondary);
@@ -209,7 +209,7 @@
 .tqe-loading {
   text-align: center;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: var(--text-sm);
   padding: 60px 0;
 }
 
@@ -240,7 +240,7 @@
   padding: 10px 12px;
   text-align: left;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-secondary);
@@ -294,7 +294,7 @@
 .tqe-col-actions  { width: 72px;  min-width: 72px;  }
 
 .tqe-cell-id {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   display: flex;
@@ -306,8 +306,8 @@
   display: inline-block;
   width: 7px;
   height: 7px;
-  border-radius: 50%;
-  background: #22c55e;
+  border-radius: var(--radius-full);
+  background: var(--color-success);
   flex-shrink: 0;
 }
 
@@ -332,15 +332,15 @@
 .tqe-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   white-space: nowrap;
 }
 
-.diff-easy   { background: #d1fae5; color: #065f46; }
-.diff-medium { background: #fef3c7; color: #92400e; }
-.diff-hard   { background: #fee2e2; color: #991b1b; }
+.diff-easy   { background: var(--color-success-light); color: var(--color-success-dark); }
+.diff-medium { background: var(--color-warning-light); color: var(--color-warning-dark); }
+.diff-hard   { background: var(--color-error-light); color: var(--color-error-dark); }
 
 /* Inline inputs */
 .tqe-input {
@@ -392,14 +392,14 @@
 
 .tqe-icon-btn:hover        { background: var(--border); color: var(--text); }
 .tqe-icon-btn:disabled     { opacity: 0.4; cursor: not-allowed; }
-.tqe-btn-save:hover        { background: #d1fae5; color: #065f46; }
-.tqe-btn-delete:hover      { background: #fee2e2; color: #dc2626; }
+.tqe-btn-save:hover        { background: var(--color-success-light); color: var(--color-success-dark); }
+.tqe-btn-delete:hover      { background: var(--color-error-light); color: var(--color-error); }
 
 /* Empty state */
 .tqe-empty {
   text-align: center;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: var(--text-sm);
   padding: 48px 0;
 }
 

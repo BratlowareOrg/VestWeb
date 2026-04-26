@@ -1,0 +1,127 @@
+/* ==========================================================================
+   Design Tokens — VestWeb
+   Fonte única da verdade para cores, espaçamento, tipografia e forma.
+   Importe este arquivo ANTES de qualquer outro CSS.
+   ========================================================================== */
+
+:root {
+  /* ── Brand ─────────────────────────────────────────────────────────────── */
+  --primary:       #6366f1;
+  --primary-dark:  #4f46e5;
+  --primary-hover: #5558e8;
+  --primary-light: #ede9fe;
+
+  /* ── Semantic — Success ─────────────────────────────────────────────────── */
+  --color-success:       #10b981;
+  --color-success-light: #d1fae5;
+  --color-success-dark:  #065f46;
+
+  /* ── Semantic — Warning ─────────────────────────────────────────────────── */
+  --color-warning:       #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-warning-dark:  #92400e;
+
+  /* ── Semantic — Error ───────────────────────────────────────────────────── */
+  --color-error:         #ef4444;
+  --color-error-light:   #fee2e2;
+  --color-error-dark:    #991b1b;
+
+  /* ── Semantic — Info ────────────────────────────────────────────────────── */
+  --color-info:          #0ea5e9;
+  --color-info-light:    #e0f2fe;
+  --color-info-dark:     #0369a1;
+
+  /* ── Neutral / Surface ──────────────────────────────────────────────────── */
+  --text:           #111827;
+  --text-secondary: #4b5563;
+  --text-disabled:  #9ca3af;
+  --bg:             #f1f5f9;
+  --white:          #ffffff;
+  --border:         #cbd5e1;
+  --sidebar-bg:     #1a1a2e;
+
+  /* ── Typography ─────────────────────────────────────────────────────────── */
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+
+  --font-normal:    400;
+  --font-medium:    500;
+  --font-semibold:  600;
+  --font-bold:      700;
+  --font-extrabold: 800;
+
+  --leading-tight:   1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.75;
+
+  /* ── Spacing ────────────────────────────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  28px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Border radius ───────────────────────────────────────────────────────── */
+  --radius-sm:   4px;
+  --radius:      8px;
+  --radius-md:   10px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  24px;
+  --radius-pill: 20px;    /* tags, badges, botões arredondados */
+  --radius-full: 9999px;  /* avatares, elementos circulares   */
+
+  /* ── Shadows ────────────────────────────────────────────────────────────── */
+  --shadow:    0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+
+  /* ── Motion ─────────────────────────────────────────────────────────────── */
+  --transition:        all 0.2s ease;
+  --transition-colors: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  --transition-fast:   all 0.15s ease;
+  --transition-slow:   all 0.35s ease;
+
+  /* ── Layout ──────────────────────────────────────────────────────────────── */
+  --sidebar-width:  260px;
+  --content-max-w: 1280px;
+}
+
+/* ── Dark mode overrides ──────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --text:           #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-disabled:  #64748b;
+  --bg:             #0f172a;
+  --white:          #1e293b;
+  --border:         #334155;
+  --sidebar-bg:     #0d1526;
+  --primary-light:  #1e1b4b;
+
+  --color-success-light: #064e3b;
+  --color-success-dark:  #6ee7b7;
+
+  --color-warning-light: #451a03;
+  --color-warning-dark:  #fcd34d;
+
+  --color-error-light:   #450a0a;
+  --color-error-dark:    #fca5a5;
+
+  --color-info-light:    #0c2a3e;
+  --color-info-dark:     #7dd3fc;
+
+  --shadow:    0 1px 3px rgba(0, 0, 0, 0.4),  0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}

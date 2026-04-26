@@ -64,7 +64,7 @@ describe('LoginPage', () => {
   it('should render the login form', () => {
     renderLoginPage();
     expect(screen.getByLabelText(/matricula/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Senha', { exact: true })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
   });
 
@@ -74,7 +74,7 @@ describe('LoginPage', () => {
     renderLoginPage();
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/matricula/i), 'ANA001');
-    await user.type(screen.getByLabelText(/senha/i), 'password123');
+    await user.type(screen.getByLabelText('Senha', { exact: true }), 'password123');
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /entrando/i })).toBeDisabled(),
@@ -88,7 +88,7 @@ describe('LoginPage', () => {
     renderLoginPage();
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/matricula/i), 'WRONG');
-    await user.type(screen.getByLabelText(/senha/i), 'badpassword');
+    await user.type(screen.getByLabelText('Senha', { exact: true }), 'badpassword');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
     await waitFor(() =>
       expect(screen.getByText('Matrícula ou senha inválidos')).toBeInTheDocument(),
@@ -110,7 +110,7 @@ describe('LoginPage', () => {
     renderLoginPage();
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/matricula/i), 'ANA001');
-    await user.type(screen.getByLabelText(/senha/i), 'correct');
+    await user.type(screen.getByLabelText('Senha', { exact: true }), 'correct');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/select-platform'));
   });
@@ -130,16 +130,16 @@ describe('LoginPage', () => {
     renderLoginPage();
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/matricula/i), 'PROF001');
-    await user.type(screen.getByLabelText(/senha/i), 'correct');
+    await user.type(screen.getByLabelText('Senha', { exact: true }), 'correct');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/teacher/home'));
   });
 
   it('should toggle password visibility when eye icon is clicked', async () => {
     renderLoginPage();
-    const passwordInput = screen.getByLabelText(/senha/i);
+    const passwordInput = screen.getByLabelText('Senha', { exact: true });
     expect(passwordInput).toHaveAttribute('type', 'password');
-    const toggleButton = screen.getByRole('button', { name: '' }); // eye icon button
+    const toggleButton = screen.getByRole('button', { name: /mostrar senha/i });
     await userEvent.setup().click(toggleButton);
     expect(passwordInput).toHaveAttribute('type', 'text');
     await userEvent.setup().click(toggleButton);

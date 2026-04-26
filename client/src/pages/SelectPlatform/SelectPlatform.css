@@ -1,4 +1,4 @@
-.select-platform {
+﻿.select-platform {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -49,8 +49,8 @@
   align-items: center;
   gap: 6px;
   color: rgba(255, 255, 255, 0.88);  /* was 0.7 — bumped for WCAG AA */
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   text-decoration: none;
   margin-bottom: 24px;
   transition: var(--transition);
@@ -77,17 +77,17 @@
 
 .select-platform-inner h1 {
   font-size: clamp(28px, 4vw, 36px);
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: white;
   margin-bottom: 10px;
   letter-spacing: -0.5px;
 }
 
 .select-platform-inner > p {
-  font-size: 18px;
+  font-size: var(--text-lg);
   color: rgba(255, 255, 255, 0.78);
   margin-bottom: 48px;
-  font-weight: 400;
+  font-weight: var(--font-normal);
   max-width: 480px;
   margin-left: auto;
   margin-right: auto;
@@ -134,12 +134,12 @@
 }
 
 .platform-card-flix:hover {
-  border-color: #ef4444;
-  box-shadow: 0 28px 56px rgba(0, 0, 0, 0.5), 0 0 0 1px #ef4444;
+  border-color: var(--color-error);
+  box-shadow: 0 28px 56px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--color-error);
 }
 
 .platform-card-flix:focus-visible {
-  outline-color: #ef4444;
+  outline-color: var(--color-error);
 }
 
 /* Netflix teaser overlay — fades in on card hover */
@@ -203,7 +203,7 @@
 }
 
 .platform-card-icon-VestWebFlix {
-  background: linear-gradient(135deg, #dc2626, #991b1b);
+  background: linear-gradient(135deg, var(--color-error), var(--color-error-dark));
   color: white;
 }
 
@@ -217,13 +217,13 @@
 }
 
 .platform-card h2 {
-  font-size: 24px;
-  font-weight: 800;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-extrabold);
   color: white;
 }
 
 .platform-card p {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: rgba(255, 255, 255, 0.65);
   line-height: 1.6;
   margin: 0;
@@ -236,8 +236,8 @@
   border: 1.5px solid rgba(255, 255, 255, 0.25);
   padding: 10px 28px;
   border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
   transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.22s ease;
   margin-top: 8px;
   pointer-events: none; /* card <Link> is the real click target */
@@ -255,23 +255,23 @@
 }
 
 .platform-card-flix:hover .platform-card-btn-red {
-  background: linear-gradient(135deg, #dc2626, #991b1b);
-  border-color: #dc2626;
+  background: linear-gradient(135deg, var(--color-error), var(--color-error-dark));
+  border-color: var(--color-error);
   color: white;
   transform: scale(1.04);
 }
 
 .platform-card-badge {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   letter-spacing: 0.2px;
 }
 
 .platform-card-badge-red {
   background: rgba(220, 38, 38, 0.2);
-  color: #fca5a5;
+  color: var(--color-error-light);
   border: 1px solid rgba(239, 68, 68, 0.35);
 }
 
