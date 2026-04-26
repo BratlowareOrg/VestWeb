@@ -1,0 +1,70 @@
+version: '3.9'
+
+services:
+  # ─── PostgreSQL local ──────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: vestweb_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: db_VestWeb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d db_VestWeb']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend (Express) ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: vestweb_backend
+    restart: unless-stopped
+    command: npm run dev
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_NAME: db_VestWeb
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_mude_em_producao}
+      JWT_EXPIRES_IN: '7d'
+      CLIENT_URL: 'http://localhost,http://localhost:5173,http://localhost:4173'
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      EMAIL_TO: ${EMAIL_TO:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+      - backend_modules:/app/node_modules
+
+  # ─── Frontend (React + Nginx) ─────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: vestweb_frontend
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  backend_modules:

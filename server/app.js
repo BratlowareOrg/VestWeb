@@ -8,8 +8,18 @@ import './src/db/models/index.js'; // registra todos os models e associations
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173,http://localhost:4173')
+  .split(',')
+  .map((o) => o.trim());
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:4173'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS bloqueado para origem: ${origin}`));
+    }
+  },
   credentials: true,
 }));
 

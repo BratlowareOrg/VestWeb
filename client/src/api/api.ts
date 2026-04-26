@@ -1,7 +1,8 @@
+/// <reference types="vite/client" />
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: (import.meta.env.VITE_API_URL as string | undefined) ?? '/api',
   headers: {
     'Content-Type': 'application/json',
   },
