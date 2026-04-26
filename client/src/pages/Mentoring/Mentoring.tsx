@@ -195,8 +195,9 @@ const Mentoring = () => {
               ) : (
                 <>
                   <div className="form-group">
-                    <label>Data e hora</label>
+                    <label htmlFor="mentoring-scheduled-at">Data e hora</label>
                     <input
+                      id="mentoring-scheduled-at"
                       type="datetime-local"
                       className="form-control"
                       value={form.scheduled_at}
@@ -205,8 +206,9 @@ const Mentoring = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Observacoes (opcional)</label>
+                    <label htmlFor="mentoring-notes">Observacoes (opcional)</label>
                     <textarea
+                      id="mentoring-notes"
                       className="form-control"
                       rows={3}
                       value={form.notes}

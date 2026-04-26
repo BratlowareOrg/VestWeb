@@ -41,7 +41,7 @@ const TeacherLoginPage = () => {
         <div className="teacher-login-left-pattern" />
         <div className="teacher-login-left-content">
           <div className="teacher-login-left-logo">
-            <img src={logo} alt="VestWeb" className="login-logo-img" />
+            <img src={logo} alt="VestWeb" className="login-logo-img" width={168} height={48} decoding="async" />
           </div>
           <h1 className="teacher-login-left-title">Portal do Professor</h1>
           <p className="teacher-login-left-subtitle">
@@ -66,7 +66,7 @@ const TeacherLoginPage = () => {
       <div className="teacher-login-right">
         <div className="teacher-login-card">
           <div className="teacher-login-card-logo">
-            <img src={logo} alt="VestWeb" className="login-logo-img" />
+            <img src={logo} alt="VestWeb" className="login-logo-img" width={168} height={48} decoding="async" />
           </div>
           <div className="teacher-login-badge">Área do Professor</div>
           <h2>Acesse o portal</h2>
@@ -135,3 +135,4 @@ const TeacherLoginPage = () => {
 };
 
 export default TeacherLoginPage;
+

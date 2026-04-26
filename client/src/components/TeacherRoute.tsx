@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { fetchMe } from '../slices/authSlice';
+import FullPageLoader from './FullPageLoader';
 
 interface TeacherRouteProps {
   children: ReactNode;
@@ -19,7 +20,7 @@ const TeacherRoute = ({ children }: TeacherRouteProps) => {
   }, [authChecked, checkingSession, dispatch]);
 
   if (!authChecked || checkingSession) {
-    return null;
+    return <FullPageLoader message="Validando sessao..." />;
   }
 
   if (!user) return <Navigate to="/teacher/login" replace />;

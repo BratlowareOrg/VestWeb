@@ -198,26 +198,26 @@ const StudyRoom = () => {
               </div>
 
               <div className="form-group">
-                <label>Titulo</label>
-                <input className="form-control" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Ex: Estudar Biologia" />
+                <label htmlFor="studyroom-title">Titulo</label>
+                <input id="studyroom-title" className="form-control" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Ex: Estudar Biologia" />
               </div>
               <div className="form-group">
-                <label>Data</label>
-                <input type="date" className="form-control" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
+                <label htmlFor="studyroom-date">Data</label>
+                <input id="studyroom-date" type="date" className="form-control" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
-                  <label>Inicio</label>
-                  <input type="time" className="form-control" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
+                  <label htmlFor="studyroom-start-time">Inicio</label>
+                  <input id="studyroom-start-time" type="time" className="form-control" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label>Fim</label>
-                  <input type="time" className="form-control" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
+                  <label htmlFor="studyroom-end-time">Fim</label>
+                  <input id="studyroom-end-time" type="time" className="form-control" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
                 </div>
               </div>
               <div className="form-group">
-                <label>Tipo</label>
-                <select className="form-control" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+                <label htmlFor="studyroom-type">Tipo</label>
+                <select id="studyroom-type" className="form-control" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
                   <option value="study_block">Bloco de estudo</option>
                   <option value="review">Revisao</option>
                 </select>

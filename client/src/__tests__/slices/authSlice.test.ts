@@ -102,14 +102,17 @@ describe('authSlice — loginThunk', () => {
     expect(state.authChecked).toBe(true);
   });
 
-  it('persists VestWeb_user in localStorage on success', async () => {
+  it('clears legacy auth keys in localStorage on successful login', async () => {
+    localStorage.setItem('VestWeb_user', JSON.stringify(makeUser()));
+    localStorage.setItem('VestWeb_token', 'legacy');
+
     const user = makeUser();
     mockApi.post.mockResolvedValue({ data: { data: { user } } });
 
     const store = buildStore();
     await store.dispatch(loginThunk({ enrollment: 'ANA001', password: 'correct' }));
 
-    expect(JSON.parse(localStorage.getItem('VestWeb_user')!)).toEqual(user);
+    expect(localStorage.getItem('VestWeb_user')).toBeNull();
     expect(localStorage.getItem('VestWeb_token')).toBeNull();
   });
 });

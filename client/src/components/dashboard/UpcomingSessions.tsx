@@ -58,7 +58,7 @@ const UpcomingSessions = ({ upcoming, loading }: Props) => (
             <li key={s.id} className={`teacher-upcoming-item${isToday ? ' today' : ''}`}>
               <div className="teacher-upcoming-avatar">
                 {s.student.avatar_url
-                  ? <img src={s.student.avatar_url} alt={s.student.name} />
+                  ? <img src={s.student.avatar_url} alt={s.student.name} width={40} height={40} loading="lazy" decoding="async" />
                   : getInitials(s.student.name)
                 }
               </div>

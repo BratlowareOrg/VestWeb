@@ -119,8 +119,9 @@ const Flashcards = () => {
 
             <div className="fc-setup-filters">
               <div className="form-group">
-                <label>Matéria</label>
+                <label htmlFor="flashcards-subject-filter">Mat?ria</label>
                 <select
+                  id="flashcards-subject-filter"
                   className="form-control"
                   value={filters.subject_id}
                   onChange={e => setFilters({ subject_id: e.target.value, topic_id: '' })}
@@ -134,8 +135,9 @@ const Flashcards = () => {
 
               {filters.subject_id && (
                 <div className="form-group">
-                  <label>Tópico</label>
+                  <label htmlFor="flashcards-topic-filter">T?pico</label>
                   <select
+                    id="flashcards-topic-filter"
                     className="form-control"
                     value={filters.topic_id}
                     onChange={e => setFilters(f => ({ ...f, topic_id: e.target.value }))}

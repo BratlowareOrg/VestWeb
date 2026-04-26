@@ -24,29 +24,14 @@ interface AuthState {
   checkingSession: boolean;
 }
 
-const parseStoredUser = (): AuthUser | null => {
-  try {
-    const raw = localStorage.getItem('VestWeb_user') || localStorage.getItem('VestWeb_student');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
-const clearPersistedAuth = () => {
+const wipeLegacyAuthStorage = () => {
   localStorage.removeItem('VestWeb_token');
   localStorage.removeItem('VestWeb_user');
   localStorage.removeItem('VestWeb_student');
 };
 
-const persistUser = (user: AuthUser) => {
-  localStorage.setItem('VestWeb_user', JSON.stringify(user));
-  localStorage.removeItem('VestWeb_student');
-  localStorage.removeItem('VestWeb_token');
-};
-
 const initialState: AuthState = {
-  user: parseStoredUser(),
+  user: null,
   token: null,
   loading: false,
   error: null,
@@ -85,7 +70,7 @@ export const fetchMe = createAsyncThunk(
       const res = await api.get('/auth/me');
       return res.data.data;
     } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Erro ao buscar usuário');
+      return rejectWithValue(err.response?.data?.message || 'Erro ao buscar usuario');
     }
   }
 );
@@ -98,7 +83,7 @@ export const logoutThunk = createAsyncThunk(
     } catch {
       // ignore
     }
-    clearPersistedAuth();
+    wipeLegacyAuthStorage();
   }
 );
 
@@ -112,8 +97,7 @@ const authSlice = createSlice({
       state.token = action.payload.token ?? null;
       state.authChecked = true;
       state.checkingSession = false;
-      if (nextUser) persistUser(nextUser);
-      else clearPersistedAuth();
+      wipeLegacyAuthStorage();
     },
     clearAuth(state) {
       state.user = null;
@@ -121,7 +105,7 @@ const authSlice = createSlice({
       state.error = null;
       state.authChecked = true;
       state.checkingSession = false;
-      clearPersistedAuth();
+      wipeLegacyAuthStorage();
     },
     setError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
@@ -132,7 +116,7 @@ const authSlice = createSlice({
     updateUser(state, action: PayloadAction<Partial<AuthUser>>) {
       if (!state.user) return;
       state.user = { ...state.user, ...action.payload };
-      persistUser(state.user);
+      wipeLegacyAuthStorage();
     },
   },
   extraReducers: (builder) => {
@@ -148,8 +132,7 @@ const authSlice = createSlice({
         state.user = nextUser;
         state.authChecked = true;
         state.checkingSession = false;
-        if (nextUser) persistUser(nextUser);
-        else clearPersistedAuth();
+        wipeLegacyAuthStorage();
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.loading = false;
@@ -168,8 +151,7 @@ const authSlice = createSlice({
         state.user = nextUser;
         state.authChecked = true;
         state.checkingSession = false;
-        if (nextUser) persistUser(nextUser);
-        else clearPersistedAuth();
+        wipeLegacyAuthStorage();
       })
       .addCase(teacherLoginThunk.rejected, (state, action) => {
         state.loading = false;
@@ -185,14 +167,14 @@ const authSlice = createSlice({
         state.token = null;
         state.authChecked = true;
         state.checkingSession = false;
-        persistUser(action.payload);
+        wipeLegacyAuthStorage();
       })
       .addCase(fetchMe.rejected, (state) => {
         state.user = null;
         state.token = null;
         state.authChecked = true;
         state.checkingSession = false;
-        clearPersistedAuth();
+        wipeLegacyAuthStorage();
       })
       .addCase(logoutThunk.fulfilled, (state) => {
         state.user = null;

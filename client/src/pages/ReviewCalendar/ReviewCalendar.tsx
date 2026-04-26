@@ -26,8 +26,7 @@ const ReviewCalendar = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editEvent, setEditEvent] = useState<StudyEvent | null>(null);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [form, setForm] = useState({ title: '', date: '', start_time: '', end_time: '', type: 'study_block', topic_id: '' });
+    const [form, setForm] = useState({ title: '', date: '', start_time: '', end_time: '', type: 'study_block', topic_id: '' });
 
   const loadEvents = async () => {
     setLoading(true);
@@ -77,7 +76,6 @@ const ReviewCalendar = () => {
 
   const openCreateModal = (date: Date) => {
     setEditEvent(null);
-    setSelectedDate(date.toISOString().split('T')[0]);
     setForm({ title: '', date: date.toISOString().split('T')[0], start_time: '', end_time: '', type: 'study_block', topic_id: '' });
     setShowModal(true);
   };
@@ -138,11 +136,11 @@ const ReviewCalendar = () => {
           <h1>Calendario de Revisao</h1>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <div className="calendar-nav">
-              <button onClick={prevMonth}><ChevronLeft size={18} /></button>
+              <button type="button" onClick={prevMonth} aria-label="Mes anterior"><ChevronLeft size={18} aria-hidden="true" /></button>
               <span className="calendar-month-label">{MONTHS[currentMonth - 1]} {currentYear}</span>
-              <button onClick={nextMonth}><ChevronRight size={18} /></button>
+              <button type="button" onClick={nextMonth} aria-label="Proximo mes"><ChevronRight size={18} aria-hidden="true" /></button>
             </div>
-            <button className="btn-primary" onClick={() => openCreateModal(today)} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+            <button type="button" className="btn-primary" onClick={() => openCreateModal(today)} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
               <Plus size={16} />
               Criar evento
             </button>
@@ -208,32 +206,32 @@ const ReviewCalendar = () => {
             <div className="calendar-modal" onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h3 style={{ margin: 0 }}>{editEvent ? 'Editar evento' : 'Criar evento'}</h3>
-                <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <button type="button" onClick={() => setShowModal(false)} aria-label="Fechar modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
                   <X size={20} />
                 </button>
               </div>
 
               <div className="form-group">
-                <label>Titulo</label>
-                <input className="form-control" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Ex: Revisao de Biologia" required />
+                <label htmlFor="event-title">Titulo</label>
+                <input id="event-title" className="form-control" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Ex: Revisao de Biologia" required />
               </div>
               <div className="form-group">
-                <label>Data</label>
-                <input type="date" className="form-control" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
+                <label htmlFor="event-date">Data</label>
+                <input id="event-date" type="date" className="form-control" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
-                  <label>Hora inicio</label>
-                  <input type="time" className="form-control" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
+                  <label htmlFor="event-start-time">Hora inicio</label>
+                  <input id="event-start-time" type="time" className="form-control" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label>Hora fim</label>
-                  <input type="time" className="form-control" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
+                  <label htmlFor="event-end-time">Hora fim</label>
+                  <input id="event-end-time" type="time" className="form-control" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
                 </div>
               </div>
               <div className="form-group">
-                <label>Tipo</label>
-                <select className="form-control" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+                <label htmlFor="event-type">Tipo</label>
+                <select id="event-type" className="form-control" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
                   <option value="study_block">Bloco de estudo</option>
                   <option value="review">Revisao</option>
                 </select>

@@ -8,6 +8,8 @@ import {
 } from '../controllers/paymentController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import { paymentRateLimit } from '../middlewares/rateLimitMiddleware.js';
+import { validateBody } from '../middlewares/schemaValidationMiddleware.js';
+import { checkoutBodySchema } from '../validators/paymentSchemas.js';
 
 const router = Router();
 
@@ -15,8 +17,8 @@ const router = Router();
 router.post('/webhook', handleWebhook);
 
 // Rotas publicas - criacao de sessao de checkout
-router.post('/create-checkout-session', paymentRateLimit, createCheckoutSession);
-router.post('/create-pix-session', paymentRateLimit, createPixCheckoutSession);
+router.post('/create-checkout-session', paymentRateLimit, validateBody(checkoutBodySchema), createCheckoutSession);
+router.post('/create-pix-session', paymentRateLimit, validateBody(checkoutBodySchema), createPixCheckoutSession);
 
 // Consultar assinatura do usuario autenticado
 router.get('/subscription', authMiddleware, getSubscription);

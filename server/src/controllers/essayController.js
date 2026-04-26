@@ -1,6 +1,7 @@
-﻿import fetch from 'node-fetch';
+import fetch from 'node-fetch';
 import formidable from 'formidable';
 import { readFileSync } from 'fs';
+import { getRequestLogger } from '../services/logger.js';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
@@ -87,7 +88,7 @@ Responda APENAS com JSON vÃ¡lido, sem texto antes ou depois, no seguinte forma
 
     if (!response.ok) {
       const errBody = await response.text();
-      console.error('Anthropic API error:', response.status, errBody);
+      getRequestLogger(req).error({ event: 'essay_anthropic_api_error', statusCode: response.status, details: errBody }, 'Anthropic API error');
       return res.status(502).json({ message: 'Erro ao consultar a IA. Verifique a chave ANTHROPIC_API_KEY.' });
     }
 
@@ -99,8 +100,9 @@ Responda APENAS com JSON vÃ¡lido, sem texto antes ou depois, no seguinte forma
     const correction = JSON.parse(jsonMatch[0]);
     return res.json({ correction });
   } catch (err) {
-    console.error('Erro na correÃ§Ã£o IA:', err);
+    getRequestLogger(req).error({ err, event: 'essay_correction_error' }, 'Erro na correcao IA');
     return res.status(500).json({ message: 'Erro ao processar correÃ§Ã£o com IA.' });
   }
 };
+
 

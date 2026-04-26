@@ -3,6 +3,7 @@ import 'dotenv/config';
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const MIN_JWT_SECRET_LENGTH = 64;
+const MIN_JWT_SECRET_UNIQUE_CHARS = 10;
 
 const getJwtSecret = () => {
   const secret = process.env.JWT_SECRET;
@@ -14,6 +15,13 @@ const getJwtSecret = () => {
   if (secret.length < MIN_JWT_SECRET_LENGTH) {
     throw new Error(
       `Invalid JWT_SECRET: minimum length is ${MIN_JWT_SECRET_LENGTH} characters`,
+    );
+  }
+
+  const uniqueCharCount = new Set(secret).size;
+  if (uniqueCharCount < MIN_JWT_SECRET_UNIQUE_CHARS) {
+    throw new Error(
+      `Invalid JWT_SECRET: low entropy (at least ${MIN_JWT_SECRET_UNIQUE_CHARS} unique characters required)`,
     );
   }
 

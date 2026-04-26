@@ -181,8 +181,9 @@ const TeacherSettings = () => {
                 <form onSubmit={handleSaveProfile}>
                   <div className="settings-form-grid">
                     <div className="form-group">
-                      <label>Nome completo</label>
+                      <label htmlFor="teacher-settings-name">Nome completo</label>
                       <input
+                        id="teacher-settings-name"
                         type="text"
                         className="form-control"
                         value={profileForm.name}
@@ -191,8 +192,9 @@ const TeacherSettings = () => {
                       />
                     </div>
                     <div className="form-group">
-                      <label>E-mail</label>
+                      <label htmlFor="teacher-settings-email">E-mail</label>
                       <input
+                        id="teacher-settings-email"
                         type="email"
                         className="form-control"
                         value={profileForm.email}
@@ -222,8 +224,9 @@ const TeacherSettings = () => {
 
                 <form onSubmit={handleChangePassword}>
                   <div className="form-group">
-                    <label>Senha atual</label>
+                    <label htmlFor="teacher-settings-current-password">Senha atual</label>
                     <input
+                      id="teacher-settings-current-password"
                       type="password"
                       className="form-control"
                       value={passwordForm.current_password}
@@ -234,8 +237,9 @@ const TeacherSettings = () => {
                   </div>
                   <div className="settings-form-grid">
                     <div className="form-group">
-                      <label>Nova senha</label>
+                      <label htmlFor="teacher-settings-new-password">Nova senha</label>
                       <input
+                        id="teacher-settings-new-password"
                         type="password"
                         className="form-control"
                         value={passwordForm.new_password}
@@ -246,8 +250,9 @@ const TeacherSettings = () => {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Confirmar nova senha</label>
+                      <label htmlFor="teacher-settings-confirm-password">Confirmar nova senha</label>
                       <input
+                        id="teacher-settings-confirm-password"
                         type="password"
                         className="form-control"
                         value={passwordForm.confirm_password}
@@ -286,8 +291,8 @@ const TeacherSettings = () => {
                       <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{item.label}</div>
                       <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{item.desc}</div>
                     </div>
-                    <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
-                      <input type="checkbox" defaultChecked={i < 2} style={{ opacity: 0, width: 0, height: 0 }} />
+                    <label htmlFor={`teacher-notification-toggle-${i}`} style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
+                      <input id={`teacher-notification-toggle-${i}`} type="checkbox" defaultChecked={i < 2} style={{ opacity: 0, width: 0, height: 0 }} />
                       <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, background: i < 2 ? 'var(--primary)' : '#ccc', borderRadius: '24px', transition: '0.3s' }} />
                     </label>
                   </div>
@@ -310,8 +315,8 @@ const TeacherSettings = () => {
                         <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{item.label}</div>
                         <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{item.desc}</div>
                       </div>
-                      <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
-                        <input type="checkbox" defaultChecked={i < 2} style={{ opacity: 0, width: 0, height: 0 }} />
+                      <label htmlFor={`teacher-privacy-toggle-${i}`} style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
+                        <input id={`teacher-privacy-toggle-${i}`} type="checkbox" defaultChecked={i < 2} style={{ opacity: 0, width: 0, height: 0 }} />
                         <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, background: i < 2 ? 'var(--primary)' : '#ccc', borderRadius: '24px', transition: '0.3s' }} />
                       </label>
                     </div>

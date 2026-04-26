@@ -65,7 +65,7 @@ describe('authController.login', () => {
     await login(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Matrícula e senha são obrigatórios' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'MatrÃƒÂ­cula e senha sÃƒÂ£o obrigatÃƒÂ³rios' });
   });
 
   it('returns 401 when student is not found', async () => {
@@ -76,7 +76,7 @@ describe('authController.login', () => {
     await login(req, res);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Matrícula ou senha inválidos' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
   });
 
   it('returns 401 when password does not match', async () => {
@@ -88,7 +88,7 @@ describe('authController.login', () => {
     await login(req, res);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Matrícula ou senha inválidos' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
   });
 
   it('sets auth cookie and returns user payload on successful login', async () => {
@@ -125,7 +125,7 @@ describe('authController.teacherLogin', () => {
     await teacherLogin(req, res);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Matrícula ou senha inválidos' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
   });
 
   it('sets auth cookie and returns teacher payload on success', async () => {
@@ -149,6 +149,7 @@ describe('authController.teacherLogin', () => {
       }),
     }));
   });
+
 });
 
 describe('authController.me', () => {

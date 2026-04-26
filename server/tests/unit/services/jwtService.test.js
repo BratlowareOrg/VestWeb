@@ -20,6 +20,11 @@ describe('jwtService', () => {
       expect(() => validateJwtConfig()).toThrow('Invalid JWT_SECRET: minimum length is 64 characters');
     });
 
+    it('should throw when JWT_SECRET has low entropy', () => {
+      process.env.JWT_SECRET = 'a'.repeat(64);
+      expect(() => validateJwtConfig()).toThrow('Invalid JWT_SECRET: low entropy (at least 10 unique characters required)');
+    });
+
     it('should not throw when JWT_SECRET is valid', () => {
       process.env.JWT_SECRET = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
       expect(() => validateJwtConfig()).not.toThrow();
@@ -73,4 +78,3 @@ describe('jwtService', () => {
     });
   });
 });
-

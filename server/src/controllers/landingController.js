@@ -1,5 +1,6 @@
 import { Banner, Testimonial, InstitutionalVideo, Student } from '../db/models/index.js';
 import { sendContactEmail } from '../services/emailService.js';
+import { getRequestLogger } from '../services/logger.js';
 
 export const getBanners = async (req, res) => {
   try {
@@ -55,7 +56,8 @@ export const submitContact = async (req, res) => {
     await sendContactEmail({ name, email, message });
     return res.json({ message: 'Mensagem recebida com sucesso! Entraremos em contato em breve.' });
   } catch (error) {
-    console.error('Erro ao enviar email de contato:', error.message);
+    getRequestLogger(req).error({ err: error, event: 'landing_submit_contact_error' }, 'Erro ao enviar email de contato');
     return res.status(500).json({ message: 'Erro ao enviar mensagem' });
   }
 };
+

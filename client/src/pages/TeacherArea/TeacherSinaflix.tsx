@@ -178,8 +178,9 @@ const TeacherVestWebFlix = () => {
               <div className="tsf-body">
                 <div className="tsf-fields">
                   <div className="tqf-group">
-                    <label>Título *</label>
+                    <label htmlFor="teacher-video-title">T?tulo *</label>
                     <input
+                      id="teacher-video-title"
                       type="text"
                       value={form.title}
                       onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
@@ -189,10 +190,11 @@ const TeacherVestWebFlix = () => {
                   </div>
 
                   <div className="tqf-group">
-                    <label>URL do YouTube *</label>
+                    <label htmlFor="teacher-video-youtube-url">URL do YouTube *</label>
                     <div className="tsf-url-input">
                       <Youtube size={16} className="tsf-url-icon" />
                       <input
+                        id="teacher-video-youtube-url"
                         type="url"
                         value={form.youtube_url}
                         onChange={e => setForm(p => ({ ...p, youtube_url: e.target.value }))}
@@ -204,8 +206,9 @@ const TeacherVestWebFlix = () => {
 
                   <div className="tqf-row tsf-row-3">
                     <div className="tqf-group">
-                      <label>Tópico</label>
+                      <label htmlFor="teacher-video-topic">T?pico</label>
                       <select
+                        id="teacher-video-topic"
                         value={form.topic_id}
                         onChange={e => setForm(p => ({ ...p, topic_id: e.target.value }))}
                       >
@@ -217,8 +220,9 @@ const TeacherVestWebFlix = () => {
                     </div>
 
                     <div className="tqf-group">
-                      <label>Data de publicação</label>
+                      <label htmlFor="teacher-video-published-at">Data de publica??o</label>
                       <input
+                        id="teacher-video-published-at"
                         type="date"
                         value={form.published_at}
                         onChange={e => setForm(p => ({ ...p, published_at: e.target.value }))}
@@ -226,8 +230,9 @@ const TeacherVestWebFlix = () => {
                     </div>
 
                     <div className="tqf-group">
-                      <label>Thumbnail (URL opcional)</label>
+                      <label htmlFor="teacher-video-thumbnail-url">Thumbnail (URL opcional)</label>
                       <input
+                        id="teacher-video-thumbnail-url"
                         type="url"
                         value={form.thumbnail_url}
                         onChange={e => setForm(p => ({ ...p, thumbnail_url: e.target.value }))}
@@ -237,8 +242,9 @@ const TeacherVestWebFlix = () => {
                   </div>
 
                   <div className="tqf-group">
-                    <label>Descrição</label>
+                    <label htmlFor="teacher-video-description">Descri??o</label>
                     <textarea
+                      id="teacher-video-description"
                       value={form.description}
                       onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
                       rows={3}

@@ -81,6 +81,7 @@ describe('authMiddleware', () => {
     expect(next).toHaveBeenCalledTimes(1);
   });
 
+
   it('returns 401 when Authorization header is missing', async () => {
     const { req, res, next } = makeReqRes(undefined);
     await authMiddleware(req, res, next);

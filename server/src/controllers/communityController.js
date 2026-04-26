@@ -1,6 +1,17 @@
 import { Post, Comment, Like, Report, Student, Points } from '../db/models/index.js';
 import sequelize from '../db/index.js';
-import { Op } from 'sequelize';
+import createDOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
+
+const DOMPurify = createDOMPurify(new JSDOM('').window);
+
+const sanitizeCommunityText = (value) => DOMPurify
+  .sanitize(String(value ?? ''), {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  })
+  .replace(/\s+/g, ' ')
+  .trim();
 
 export const getPosts = async (req, res) => {
   try {
@@ -35,9 +46,17 @@ export const getPosts = async (req, res) => {
 export const createPost = async (req, res) => {
   try {
     const { content, image_url } = req.body;
-    if (!content) return res.status(400).json({ message: 'Content is required' });
+    const sanitizedContent = sanitizeCommunityText(content);
 
-    const post = await Post.create({ student_id: req.user.id, content, image_url });
+    if (!sanitizedContent) {
+      return res.status(400).json({ message: 'Content is required' });
+    }
+
+    const post = await Post.create({
+      student_id: req.user.id,
+      content: sanitizedContent,
+      image_url,
+    });
 
     // Award community points
     await Points.create({ student_id: req.user.id, amount: 5, reason: 'community' });
@@ -77,10 +96,10 @@ export const likePost = async (req, res) => {
     if (existing) {
       await existing.destroy();
       return res.json({ message: 'Like removed', data: { liked: false } });
-    } else {
-      await Like.create({ student_id: req.user.id, post_id: id });
-      return res.json({ message: 'Post liked', data: { liked: true } });
     }
+
+    await Like.create({ student_id: req.user.id, post_id: id });
+    return res.json({ message: 'Post liked', data: { liked: true } });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -111,10 +130,17 @@ export const addComment = async (req, res) => {
   try {
     const { id } = req.params;
     const { content, parent_id } = req.body;
-    if (!content) return res.status(400).json({ message: 'Content is required' });
+    const sanitizedContent = sanitizeCommunityText(content);
+
+    if (!sanitizedContent) {
+      return res.status(400).json({ message: 'Content is required' });
+    }
 
     const comment = await Comment.create({
-      post_id: id, student_id: req.user.id, content, parent_id: parent_id || null,
+      post_id: id,
+      student_id: req.user.id,
+      content: sanitizedContent,
+      parent_id: parent_id || null,
     });
 
     const full = await Comment.findByPk(comment.id, {
@@ -130,8 +156,12 @@ export const addComment = async (req, res) => {
 export const reportPost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { reason } = req.body;
-    const report = await Report.create({ student_id: req.user.id, post_id: id, reason });
+    const sanitizedReason = sanitizeCommunityText(req.body?.reason);
+    const report = await Report.create({
+      student_id: req.user.id,
+      post_id: id,
+      reason: sanitizedReason || null,
+    });
     return res.json({ message: 'Report submitted', data: report });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });

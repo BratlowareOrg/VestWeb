@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { Op } from 'sequelize';
 import { Subscription, PendingStudent, Student } from '../db/models/index.js';
 import { hashPassword } from '../services/hashService.js';
+import { getRequestLogger } from '../services/logger.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -10,7 +11,7 @@ function generateEnrollment() {
   return random.toString();
 }
 
-// PreÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§os em centavos (BRL) por plano individual e perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo
+// PreÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§os em centavos (BRL) por plano individual e perÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odo
 const INDIVIDUAL_PLAN_PRICES = {
   'B\u00E1sico': { mensal: 1490, trimestral: 4023,  anual: 11988 },
   Plus:   { mensal: 2490, trimestral: 6723,  anual: 19992 },
@@ -24,7 +25,7 @@ const BILLING_INTERVAL = {
   anual:      { interval: 'year',  interval_count: 1 },
 };
 
-// POST /api/payments/create-pix-session  (pagamento ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºnico ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â PIX nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o suporta recorrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªncia)
+// POST /api/payments/create-pix-session  (pagamento ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºnico ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â PIX nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o suporta recorrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªncia)
 export const createPixCheckoutSession = async (req, res) => {
   try {
     const {
@@ -40,11 +41,11 @@ export const createPixCheckoutSession = async (req, res) => {
     } = req.body;
 
     if (!planType || !billingPeriod || !email || !name) {
-      return res.status(400).json({ message: 'Campos obrigatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios ausentes.' });
+      return res.status(400).json({ message: 'Campos obrigatÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³rios ausentes.' });
     }
 
     if (planType === 'individual' && !password) {
-      return res.status(400).json({ message: 'Senha obrigatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ria.' });
+      return res.status(400).json({ message: 'Senha obrigatÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ria.' });
     }
 
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -53,15 +54,15 @@ export const createPixCheckoutSession = async (req, res) => {
 
     if (planType === 'individual') {
       const planPrices = INDIVIDUAL_PLAN_PRICES[planTier];
-      if (!planPrices) return res.status(400).json({ message: 'Plano invÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.' });
+      if (!planPrices) return res.status(400).json({ message: 'Plano invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' });
       unitAmount = planPrices[billingPeriod];
-      if (!unitAmount) return res.status(400).json({ message: 'PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo de cobranÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§a invÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.' });
-      productName = `VestWeb ${planTier} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ${billingPeriod.charAt(0).toUpperCase() + billingPeriod.slice(1)}`;
+      if (!unitAmount) return res.status(400).json({ message: 'PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odo de cobranÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§a invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' });
+      productName = `VestWeb ${planTier} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ${billingPeriod.charAt(0).toUpperCase() + billingPeriod.slice(1)}`;
     } else {
-      return res.status(400).json({ message: 'Tipo de plano invÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.' });
+      return res.status(400).json({ message: 'Tipo de plano invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' });
     }
 
-    // Calcula data de expiraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o do acesso com base no perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo escolhido
+    // Calcula data de expiraÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o do acesso com base no perÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odo escolhido
     const periodMonths = { mensal: 1, trimestral: 3, anual: 12 };
     const accessEndDate = new Date();
     accessEndDate.setMonth(accessEndDate.getMonth() + (periodMonths[billingPeriod] || 1));
@@ -75,7 +76,7 @@ export const createPixCheckoutSession = async (req, res) => {
           product_data: {
             name: productName,
             description: planType === 'individual'
-              ? 'Acesso completo ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  plataforma VestWeb'
+              ? 'Acesso completo ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  plataforma VestWeb'
               : `Plano empresarial VestWeb para ${numStudents || 1} aluno(s)`,
           },
           unit_amount: unitAmount,
@@ -97,7 +98,7 @@ export const createPixCheckoutSession = async (req, res) => {
         payment_method: 'pix',
       },
       locale: 'pt-BR',
-      expires_at: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // QR Code vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido por 24h
+      expires_at: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // QR Code vÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido por 24h
     });
 
     // Salva dados do aluno temporariamente
@@ -114,8 +115,8 @@ export const createPixCheckoutSession = async (req, res) => {
 
     res.json({ url: session.url });
   } catch (err) {
-    console.error('Stripe createPixCheckoutSession error:', err);
-    res.status(500).json({ message: 'Erro ao criar sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o PIX.' });
+    getRequestLogger(req).error({ err, event: 'payment_create_pix_session_error' }, 'Stripe createPixCheckoutSession error');
+    res.status(500).json({ message: 'Erro ao criar sessÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o PIX.' });
   }
 };
 
@@ -124,7 +125,7 @@ export const createCheckoutSession = async (req, res) => {
   try {
     const {
       planType,      // 'individual' | 'empresa'
-      planTier,      // 'individual' | 'Starter' | 'BÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡sico' | 'Profissional' | 'Enterprise'
+      planTier,      // 'individual' | 'Starter' | 'BÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡sico' | 'Profissional' | 'Enterprise'
       billingPeriod, // 'mensal' | 'trimestral' | 'anual'
       name,
       email,
@@ -135,11 +136,11 @@ export const createCheckoutSession = async (req, res) => {
     } = req.body;
 
     if (!planType || !billingPeriod || !email || !name) {
-      return res.status(400).json({ message: 'Campos obrigatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rios ausentes.' });
+      return res.status(400).json({ message: 'Campos obrigatÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³rios ausentes.' });
     }
 
     if (planType === 'individual' && !password) {
-      return res.status(400).json({ message: 'Senha obrigatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ria.' });
+      return res.status(400).json({ message: 'Senha obrigatÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ria.' });
     }
 
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -151,17 +152,17 @@ export const createCheckoutSession = async (req, res) => {
 
     if (planType === 'individual') {
       const planPrices = INDIVIDUAL_PLAN_PRICES[planTier];
-      if (!planPrices) return res.status(400).json({ message: 'Plano invÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.' });
+      if (!planPrices) return res.status(400).json({ message: 'Plano invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' });
 
       unitAmount = planPrices[billingPeriod];
-      if (!unitAmount) return res.status(400).json({ message: 'PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo de cobranÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§a invÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.' });
+      if (!unitAmount) return res.status(400).json({ message: 'PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odo de cobranÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§a invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' });
 
       const { interval, interval_count } = BILLING_INTERVAL[billingPeriod];
       recurring = { interval, interval_count };
-      productName = `VestWeb ${planTier} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ${billingPeriod.charAt(0).toUpperCase() + billingPeriod.slice(1)}`;
+      productName = `VestWeb ${planTier} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ${billingPeriod.charAt(0).toUpperCase() + billingPeriod.slice(1)}`;
 
     } else {
-      return res.status(400).json({ message: 'Tipo de plano invÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lido.' });
+      return res.status(400).json({ message: 'Tipo de plano invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' });
     }
 
     lineItems = [{
@@ -170,7 +171,7 @@ export const createCheckoutSession = async (req, res) => {
         product_data: {
           name: productName,
           description: planType === 'individual'
-            ? 'Acesso completo ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  plataforma VestWeb'
+            ? 'Acesso completo ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  plataforma VestWeb'
             : `Plano empresarial VestWeb para ${numStudents || 1} aluno(s)`,
         },
         unit_amount: unitAmount,
@@ -204,7 +205,7 @@ export const createCheckoutSession = async (req, res) => {
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    // Salva dados do aluno temporariamente ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â serÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ criado no banco apÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³s pagamento confirmar
+    // Salva dados do aluno temporariamente ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â serÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ criado no banco apÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³s pagamento confirmar
     if (planType === 'individual') {
       const password_hash = await hashPassword(password);
       await PendingStudent.upsert({
@@ -218,12 +219,12 @@ export const createCheckoutSession = async (req, res) => {
 
     res.json({ url: session.url });
   } catch (err) {
-    console.error('Stripe createCheckoutSession error:', err);
-    res.status(500).json({ message: 'Erro ao criar sessÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o de pagamento.' });
+    getRequestLogger(req).error({ err, event: 'payment_create_checkout_session_error' }, 'Stripe createCheckoutSession error');
+    res.status(500).json({ message: 'Erro ao criar sessÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o de pagamento.' });
   }
 };
 
-// POST /api/payments/webhook  (raw body obrigatÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rio ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â configurado em app.js)
+// POST /api/payments/webhook  (raw body obrigatÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³rio ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â configurado em app.js)
 export const handleWebhook = async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -231,7 +232,7 @@ export const handleWebhook = async (req, res) => {
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('Webhook signature error:', err.message);
+    getRequestLogger(req).warn({ err, event: 'payment_webhook_signature_error' }, 'Webhook signature error');
     return res.status(400).send('Webhook Error');
   }
 
@@ -242,7 +243,7 @@ export const handleWebhook = async (req, res) => {
         const meta = session.metadata || {};
         const isPix = meta.payment_method === 'pix';
 
-        // Para PIX: sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ processa se o pagamento foi confirmado
+        // Para PIX: sÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ processa se o pagamento foi confirmado
         // Para assinaturas: processa mesmo em trial (payment_status = 'no_payment_required')
         const isPaid = session.payment_status === 'paid';
         const isTrialing = session.payment_status === 'no_payment_required';
@@ -274,13 +275,13 @@ export const handleWebhook = async (req, res) => {
           await Subscription.upsert(subscriptionData, { conflictFields: ['stripe_subscription_id'] });
         }
 
-        // Cria o Student se for plano individual e ainda nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o existir
+        // Cria o Student se for plano individual e ainda nÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o existir
         if (meta.plan_type === 'individual') {
           const pending = await PendingStudent.findOne({ where: { stripe_session_id: session.id } });
           if (pending) {
             const alreadyExists = await Student.findOne({ where: { email: pending.email } });
             if (!alreadyExists) {
-              // Garante enrollment ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºnico
+              // Garante enrollment ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºnico
               let enrollment;
               let enrollmentTaken = true;
               while (enrollmentTaken) {
@@ -324,7 +325,7 @@ export const handleWebhook = async (req, res) => {
         break;
       }
 
-      // PIX pago de forma assÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­ncrona (usuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio fechou a tela e pagou depois)
+      // PIX pago de forma assÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ncrona (usuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡rio fechou a tela e pagou depois)
       case 'payment_intent.succeeded': {
         const pi = event.data.object;
         // Atualiza status caso a subscription tenha sido criada mas ainda estava pendente
@@ -341,12 +342,12 @@ export const handleWebhook = async (req, res) => {
 
     res.json({ received: true });
   } catch (err) {
-    console.error('Webhook handler error:', err);
+    getRequestLogger(req).error({ err, event: 'payment_webhook_handler_error' }, 'Webhook handler error');
     res.status(500).json({ message: 'Erro interno ao processar webhook.' });
   }
 };
 
-// POST /api/payments/portal  (requer autenticaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o)
+// POST /api/payments/portal  (requer autenticaÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o)
 export const createPortalSession = async (req, res) => {
   try {
     const authenticatedEmail = req.user?.email;
@@ -374,7 +375,7 @@ export const createPortalSession = async (req, res) => {
 
     res.json({ url: portal.url });
   } catch (err) {
-    console.error('Portal session error:', err);
+    getRequestLogger(req).error({ err, event: 'payment_create_portal_session_error' }, 'Portal session error');
     res.status(500).json({ message: 'Erro ao abrir portal de assinatura.' });
   }
 };
@@ -398,7 +399,8 @@ export const getSubscription = async (req, res) => {
 
     res.json({ subscription });
   } catch (err) {
-    console.error('Get subscription error:', err);
+    getRequestLogger(req).error({ err, event: 'payment_get_subscription_error' }, 'Get subscription error');
     res.status(500).json({ message: 'Erro ao buscar assinatura.' });
   }
 };
+

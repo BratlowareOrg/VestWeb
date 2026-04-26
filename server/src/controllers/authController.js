@@ -1,6 +1,7 @@
 import { Student, Session, Teacher, TeacherSession } from '../db/models/index.js';
 import { generateToken } from '../services/jwtService.js';
 import { comparePassword, hashPassword } from '../services/hashService.js';
+import { getRequestLogger } from '../services/logger.js';
 
 const DEFAULT_COOKIE_NAME = 'vestweb_token';
 const DEFAULT_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -53,20 +54,22 @@ const getTokenFromRequest = (req) => {
 };
 
 export const login = async (req, res) => {
+  const requestLogger = getRequestLogger(req);
+
   try {
     const { enrollment, password } = req.body;
     if (!enrollment || !password) {
-      return res.status(400).json({ message: 'Matr\u00edcula e senha s\u00e3o obrigat\u00f3rios' });
+      return res.status(400).json({ message: 'MatrÃƒÂ­cula e senha sÃƒÂ£o obrigatÃƒÂ³rios' });
     }
 
     const student = await Student.findOne({ where: { enrollment } });
     if (!student) {
-      return res.status(401).json({ message: 'Matr\u00edcula ou senha inv\u00e1lidos' });
+      return res.status(401).json({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
     }
 
     const isMatch = await comparePassword(password, student.password_hash);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Matr\u00edcula ou senha inv\u00e1lidos' });
+      return res.status(401).json({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
     }
 
     const token = generateToken({ id: student.id, type: 'student' });
@@ -82,26 +85,28 @@ export const login = async (req, res) => {
       data: { user: { ...student.toJSON(), type: 'student' } },
     });
   } catch (error) {
-    console.error('Login error:', error);
+    requestLogger.error({ err: error, event: 'auth_login_error' }, 'Login error');
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const teacherLogin = async (req, res) => {
+  const requestLogger = getRequestLogger(req);
+
   try {
     const { enrollment, password } = req.body;
     if (!enrollment || !password) {
-      return res.status(400).json({ message: 'Matr\u00edcula e senha s\u00e3o obrigat\u00f3rios' });
+      return res.status(400).json({ message: 'MatrÃƒÂ­cula e senha sÃƒÂ£o obrigatÃƒÂ³rios' });
     }
 
     const teacher = await Teacher.findOne({ where: { enrollment } });
     if (!teacher) {
-      return res.status(401).json({ message: 'Matr\u00edcula ou senha inv\u00e1lidos' });
+      return res.status(401).json({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
     }
 
     const isMatch = await comparePassword(password, teacher.password_hash);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Matr\u00edcula ou senha inv\u00e1lidos' });
+      return res.status(401).json({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
     }
 
     const token = generateToken({ id: teacher.id, type: 'teacher' });
@@ -117,7 +122,7 @@ export const teacherLogin = async (req, res) => {
       data: { user: { ...teacher.toJSON(), type: 'teacher', role: 'teacher' } },
     });
   } catch (error) {
-    console.error('Teacher login error:', error);
+    requestLogger.error({ err: error, event: 'auth_teacher_login_error' }, 'Teacher login error');
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -131,6 +136,8 @@ export const me = async (req, res) => {
 };
 
 export const uploadAvatar = async (req, res) => {
+  const requestLogger = getRequestLogger(req);
+
   try {
     if (!req.file) return res.status(400).json({ message: 'Nenhum arquivo enviado' });
 
@@ -143,12 +150,14 @@ export const uploadAvatar = async (req, res) => {
     await record.update({ avatar_url });
     return res.json({ message: 'Avatar updated', data: { avatar_url } });
   } catch (error) {
-    console.error('uploadAvatar error:', error);
+    requestLogger.error({ err: error, event: 'auth_upload_avatar_error' }, 'uploadAvatar error');
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const updateMe = async (req, res) => {
+  const requestLogger = getRequestLogger(req);
+
   try {
     const { name, email, avatar_url } = req.body;
     const Model = req.user.type === 'teacher' ? Teacher : Student;
@@ -158,12 +167,14 @@ export const updateMe = async (req, res) => {
     await record.update({ name, email, avatar_url });
     return res.json({ message: 'Profile updated', data: record });
   } catch (error) {
-    console.error('updateMe error:', error);
+    requestLogger.error({ err: error, event: 'auth_update_profile_error' }, 'updateMe error');
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const changePassword = async (req, res) => {
+  const requestLogger = getRequestLogger(req);
+
   try {
     const { current_password, new_password } = req.body;
     if (!current_password || !new_password) {
@@ -180,12 +191,14 @@ export const changePassword = async (req, res) => {
     await record.update({ password_hash });
     return res.json({ message: 'Password updated' });
   } catch (error) {
-    console.error('changePassword error:', error);
+    requestLogger.error({ err: error, event: 'auth_change_password_error' }, 'changePassword error');
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const logout = async (req, res) => {
+  const requestLogger = getRequestLogger(req);
+
   try {
     const token = getTokenFromRequest(req);
     if (token) {
@@ -199,6 +212,7 @@ export const logout = async (req, res) => {
     clearAuthCookie(res);
     return res.json({ message: 'Logged out successfully' });
   } catch (error) {
+    requestLogger.error({ err: error, event: 'auth_logout_error' }, 'logout error');
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

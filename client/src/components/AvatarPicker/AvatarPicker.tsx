@@ -79,7 +79,7 @@ const AvatarPicker = ({ currentAvatar, name, onSave, onClose }: Props) => {
 
         <div className="avatar-picker-header">
           <h3>Alterar foto de perfil</h3>
-          <button className="avatar-picker-close" onClick={onClose}><X size={18} /></button>
+          <button className="avatar-picker-close" onClick={onClose} aria-label="Fechar"><X size={18} aria-hidden="true" /></button>
         </div>
 
         <div className="avatar-picker-tabs">
@@ -107,7 +107,7 @@ const AvatarPicker = ({ currentAvatar, name, onSave, onClose }: Props) => {
                 onClick={() => fileInputRef.current?.click()}
               >
                 {preview ? (
-                  <img src={preview} alt="Preview" className="avatar-drop-preview" />
+                  <img src={preview} alt="Preview" className="avatar-drop-preview" decoding="async" />
                 ) : (
                   <>
                     <Upload size={32} />
@@ -137,14 +137,15 @@ const AvatarPicker = ({ currentAvatar, name, onSave, onClose }: Props) => {
               <div className="avatar-url-preview-row">
                 <div className="avatar-url-thumb">
                   {urlInput ? (
-                    <img src={urlInput} alt="Preview" onError={e => (e.currentTarget.style.display = 'none')} />
+                    <img src={urlInput} alt="Preview" onError={e => (e.currentTarget.style.display = 'none')} loading="lazy" decoding="async" />
                   ) : (
                     <span>{name.charAt(0).toUpperCase()}</span>
                   )}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label className="avatar-url-label">URL da imagem</label>
+                  <label htmlFor="avatar-url-input" className="avatar-url-label">URL da imagem</label>
                   <input
+                    id="avatar-url-input"
                     type="url"
                     className="avatar-url-input"
                     placeholder="https://exemplo.com/foto.jpg"
@@ -161,7 +162,7 @@ const AvatarPicker = ({ currentAvatar, name, onSave, onClose }: Props) => {
           {tab === 'generated' && (
             <div>
               <div className="avatar-generated-preview">
-                <img src={generatedUrl} alt="Avatar gerado" />
+                <img src={generatedUrl} alt="Avatar gerado" loading="lazy" decoding="async" />
               </div>
               <p className="avatar-generated-label">Escolha um estilo:</p>
               <div className="avatar-styles-grid">
@@ -173,7 +174,7 @@ const AvatarPicker = ({ currentAvatar, name, onSave, onClose }: Props) => {
                       className={`avatar-style-btn${selectedStyle === style.id ? ' active' : ''}`}
                       onClick={() => setSelectedStyle(style.id)}
                     >
-                      <img src={url} alt={style.label} />
+                      <img src={url} alt={style.label} width={64} height={64} loading="lazy" decoding="async" />
                       <span>{style.label}</span>
                       {selectedStyle === style.id && <div className="avatar-style-check"><Check size={12} /></div>}
                     </button>
