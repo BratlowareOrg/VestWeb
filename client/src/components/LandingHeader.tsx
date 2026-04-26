@@ -40,7 +40,7 @@ const LandingHeader = () => {
         {/* Bloco 1: Lado Esquerdo (Logo) */}
         <div className="landing-header-left">
           <Link to="/" className="landing-header-logo">
-            <img src={logo} alt="VestWeb" className="landing-header-logo-img" />
+            <img src={logo} alt="VestWeb" className="landing-header-logo-img" width={120} height={32} decoding="async" />
           </Link>
         </div>
 

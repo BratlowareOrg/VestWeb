@@ -7,17 +7,18 @@ import {
   getSubscription,
 } from '../controllers/paymentController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import { paymentRateLimit } from '../middlewares/rateLimitMiddleware.js';
+import { validateBody } from '../middlewares/schemaValidationMiddleware.js';
+import { checkoutBodySchema } from '../validators/paymentSchemas.js';
 
 const router = Router();
 
-// Rota pública — recebe eventos do Stripe (raw body configurado em app.js)
+// Rota publica - recebe eventos do Stripe (raw body configurado em app.js)
 router.post('/webhook', handleWebhook);
 
-// Rota pública — cria sessão de checkout (cartão/assinatura recorrente)
-router.post('/create-checkout-session', createCheckoutSession);
-
-// Rota pública — cria sessão PIX (pagamento único)
-router.post('/create-pix-session', createPixCheckoutSession);
+// Rotas publicas - criacao de sessao de checkout
+router.post('/create-checkout-session', paymentRateLimit, validateBody(checkoutBodySchema), createCheckoutSession);
+router.post('/create-pix-session', paymentRateLimit, validateBody(checkoutBodySchema), createPixCheckoutSession);
 
 // Consultar assinatura do usuario autenticado
 router.get('/subscription', authMiddleware, getSubscription);

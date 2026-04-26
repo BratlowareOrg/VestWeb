@@ -1,6 +1,6 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Mocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const mockSimulationFindAll = jest.fn();
 const mockSimulationFindByPk = jest.fn();
 const mockSimulationCreate = jest.fn();
@@ -33,7 +33,7 @@ const {
   getAll, getById, create, startSession, finishSession, getHistory,
 } = await import('../../../src/controllers/simulationsController.js');
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const makeRes = () => ({
   status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
@@ -45,7 +45,7 @@ const makeSimulation = (id = 1) => ({
   toJSON: () => ({ id }),
 });
 
-// ── getAll ─────────────────────────────────────────────────────────────────────
+// â”€â”€ getAll â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('simulationsController.getAll', () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -58,7 +58,7 @@ describe('simulationsController.getAll', () => {
   });
 });
 
-// ── getById ────────────────────────────────────────────────────────────────────
+// â”€â”€ getById â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('simulationsController.getById', () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -79,7 +79,7 @@ describe('simulationsController.getById', () => {
   });
 });
 
-// ── create ─────────────────────────────────────────────────────────────────────
+// â”€â”€ create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('simulationsController.create', () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -105,11 +105,12 @@ describe('simulationsController.create', () => {
   });
 });
 
-// ── startSession ───────────────────────────────────────────────────────────────
+// â”€â”€ startSession â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('simulationsController.startSession', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('should create a QuestionSession in simulation mode', async () => {
+    mockSimulationFindByPk.mockResolvedValue(makeSimulation(1));
     mockQuestionSessionCreate.mockResolvedValue({ id: 99 });
     const req = { params: { id: '1' }, user: { id: 7 } };
     const res = makeRes();
@@ -123,7 +124,7 @@ describe('simulationsController.startSession', () => {
   });
 });
 
-// ── finishSession ──────────────────────────────────────────────────────────────
+// â”€â”€ finishSession â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('simulationsController.finishSession', () => {
   beforeEach(() => jest.clearAllMocks());
 

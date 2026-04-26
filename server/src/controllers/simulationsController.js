@@ -8,7 +8,7 @@ export const getAll = async (req, res) => {
     });
     return res.json({ message: 'Simulations fetched', data: simulations });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -30,7 +30,7 @@ export const getById = async (req, res) => {
     if (!simulation) return res.status(404).json({ message: 'Simulation not found' });
     return res.json({ message: 'Simulation fetched', data: simulation });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -54,7 +54,7 @@ export const create = async (req, res) => {
 
     return res.status(201).json({ message: 'Simulation created', data: simulation });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -71,7 +71,7 @@ export const startSession = async (req, res) => {
     });
     return res.status(201).json({ message: 'Session started', data: session });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -92,7 +92,7 @@ export const finishSession = async (req, res) => {
 
     return res.json({ message: 'Session finished', data: { session, score, correct, total } });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -116,6 +116,6 @@ export const getHistory = async (req, res) => {
 
     return res.json({ message: 'History fetched', data: history });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

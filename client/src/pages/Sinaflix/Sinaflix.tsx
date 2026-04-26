@@ -1,10 +1,78 @@
-import { useState, useEffect, useRef } from 'react';
+import { memo, useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Play, X, Heart, Check, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import { fetchVideos, toggleFavorite, updateProgress, Video } from '../../slices/videosSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import './Sinaflix.css';
+
+function getYoutubeEmbedUrl(url: string): string {
+  if (!url) return '';
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&\n?#]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1` : url;
+}
+
+function getYoutubeThumbnail(url: string): string {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&\n?#]+)/);
+  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : '';
+}
+
+type VideoCardProps = {
+  video: Video;
+  onSelect: (video: Video) => void;
+  onToggleFavorite: (e: React.MouseEvent, id: number) => void;
+};
+
+const VideoCard = memo(function VideoCard({ video, onSelect, onToggleFavorite }: VideoCardProps) {
+  const thumb = video.thumbnail_url || getYoutubeThumbnail(video.youtube_url);
+  const isWatched = video.progress?.watched;
+  const hasProgress = (video.progress?.progress_seconds ?? 0) > 0;
+
+  return (
+    <div className="VestWebFlix-video-card" onClick={() => onSelect(video)}>
+      <div className="VestWebFlix-video-thumb">
+        {thumb && (
+          <img
+            src={thumb}
+            alt={video.title}
+            width={320}
+            height={180}
+            loading="lazy"
+            decoding="async"
+          />
+        )}
+        <div className="VestWebFlix-video-thumb-overlay" />
+        <div className="VestWebFlix-video-thumb-icon">
+          <Play size={20} style={{ marginLeft: '2px' }} />
+        </div>
+        {isWatched && (
+          <div className="VestWebFlix-watched-badge">
+            <Check size={10} />
+          </div>
+        )}
+        <button
+          className={`VestWebFlix-card-fav${video.isFavorite ? ' is-fav' : ''}`}
+          onClick={e => onToggleFavorite(e, video.id)}
+          aria-label={video.isFavorite ? 'Remover favorito' : 'Favoritar'}
+        >
+          <Heart size={13} aria-hidden="true" />
+        </button>
+        {(isWatched || hasProgress) && (
+          <div className="VestWebFlix-progress-bar">
+            <div
+              className={`VestWebFlix-progress-fill${isWatched ? ' watched' : ''}`}
+              style={{ width: isWatched ? '100%' : '35%' }}
+            />
+          </div>
+        )}
+      </div>
+      <div className="VestWebFlix-video-info">
+        <div className="VestWebFlix-video-title">{video.title}</div>
+        <div className="VestWebFlix-video-topic">{video.topic?.name || video.topic?.subject?.name}</div>
+      </div>
+    </div>
+  );
+});
 
 const VestWebFlix = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,46 +86,47 @@ const VestWebFlix = () => {
     dispatch(fetchVideos({}));
   }, [dispatch]);
 
-  const scrollRow = (subject: string, dir: 'left' | 'right') => {
+  const scrollRow = useCallback((subject: string, dir: 'left' | 'right') => {
     const el = scrollRefs.current[subject];
     if (el) el.scrollBy({ left: dir === 'right' ? 320 : -320, behavior: 'smooth' });
-  };
+  }, []);
 
-  const getYoutubeEmbedUrl = (url: string) => {
-    if (!url) return '';
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&\n?#]+)/);
-    return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1` : url;
-  };
+  const subjects = useMemo(
+    () => Array.from(new Set(videos.map((video) => video.topic?.subject?.name).filter(Boolean))),
+    [videos]
+  );
 
-  const getYoutubeThumbnail = (url: string) => {
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&\n?#]+)/);
-    return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : '';
-  };
+  const normalizedSearch = useMemo(() => search.trim().toLowerCase(), [search]);
 
-  const subjects = Array.from(new Set(videos.map(v => v.topic?.subject?.name).filter(Boolean)));
-
-  const filtered = videos.filter(v => {
-    const matchSearch = !search || v.title.toLowerCase().includes(search.toLowerCase());
-    const matchSubject = activeSubject === 'all' || v.topic?.subject?.name === activeSubject;
+  const filtered = useMemo(() => videos.filter((video) => {
+    const matchSearch = !normalizedSearch || video.title.toLowerCase().includes(normalizedSearch);
+    const matchSubject = activeSubject === 'all' || video.topic?.subject?.name === activeSubject;
     return matchSearch && matchSubject;
-  });
+  }), [videos, normalizedSearch, activeSubject]);
 
-  const groupedBySubject: Record<string, Video[]> = {};
-  filtered.forEach(v => {
-    const key = v.topic?.subject?.name || 'Outros';
-    if (!groupedBySubject[key]) groupedBySubject[key] = [];
-    groupedBySubject[key].push(v);
-  });
+  const groupedBySubject = useMemo(() => {
+    const grouped: Record<string, Video[]> = {};
 
-  const handleToggleFavorite = (e: React.MouseEvent, videoId: number) => {
+    filtered.forEach((video) => {
+      const key = video.topic?.subject?.name || 'Outros';
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(video);
+    });
+
+    return grouped;
+  }, [filtered]);
+
+  const groupedRows = useMemo(() => Object.entries(groupedBySubject), [groupedBySubject]);
+
+  const handleToggleFavorite = useCallback((e: React.MouseEvent, videoId: number) => {
     e.stopPropagation();
     dispatch(toggleFavorite(videoId));
-  };
+  }, [dispatch]);
 
-  const handleMarkWatched = () => {
+  const handleMarkWatched = useCallback(() => {
     if (!selectedVideo) return;
     dispatch(updateProgress({ id: selectedVideo.id, watched: true }));
-  };
+  }, [dispatch, selectedVideo]);
 
   return (
     <div className="VestWebFlix">
@@ -106,7 +175,7 @@ const VestWebFlix = () => {
               <p>Nenhuma videoaula encontrada</p>
             </div>
           ) : (
-            Object.entries(groupedBySubject).map(([subject, vids]) => (
+            groupedRows.map(([subject, vids]) => (
               <div key={subject} className="VestWebFlix-row">
                 <div className="VestWebFlix-row-header">
                   <div className="VestWebFlix-row-title">{subject}</div>
@@ -131,46 +200,14 @@ const VestWebFlix = () => {
                   className="VestWebFlix-videos-scroll"
                   ref={el => { scrollRefs.current[subject] = el; }}
                 >
-                  {vids.map(video => {
-                    const thumb = video.thumbnail_url || getYoutubeThumbnail(video.youtube_url);
-                    const isWatched = video.progress?.watched;
-                    const hasProgress = (video.progress?.progress_seconds ?? 0) > 0;
-                    return (
-                      <div key={video.id} className="VestWebFlix-video-card" onClick={() => setSelectedVideo(video)}>
-                        <div className="VestWebFlix-video-thumb">
-                          {thumb && <img src={thumb} alt={video.title} />}
-                          <div className="VestWebFlix-video-thumb-overlay" />
-                          <div className="VestWebFlix-video-thumb-icon">
-                            <Play size={20} style={{ marginLeft: '2px' }} />
-                          </div>
-                          {isWatched && (
-                            <div className="VestWebFlix-watched-badge">
-                              <Check size={10} />
-                            </div>
-                          )}
-                          <button
-                            className={`VestWebFlix-card-fav${video.isFavorite ? ' is-fav' : ''}`}
-                            onClick={e => handleToggleFavorite(e, video.id)}
-                            aria-label={video.isFavorite ? 'Remover favorito' : 'Favoritar'}
-                          >
-                            <Heart size={13} />
-                          </button>
-                          {(isWatched || hasProgress) && (
-                            <div className="VestWebFlix-progress-bar">
-                              <div
-                                className={`VestWebFlix-progress-fill${isWatched ? ' watched' : ''}`}
-                                style={{ width: isWatched ? '100%' : '35%' }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                        <div className="VestWebFlix-video-info">
-                          <div className="VestWebFlix-video-title">{video.title}</div>
-                          <div className="VestWebFlix-video-topic">{video.topic?.name || subject}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {vids.map(video => (
+                    <VideoCard
+                      key={video.id}
+                      video={video}
+                      onSelect={setSelectedVideo}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  ))}
                 </div>
               </div>
             ))
@@ -191,8 +228,8 @@ const VestWebFlix = () => {
                   allowFullScreen
                 />
               </div>
-              <button className="VestWebFlix-modal-close" onClick={() => setSelectedVideo(null)}>
-                <X size={18} />
+              <button className="VestWebFlix-modal-close" onClick={() => setSelectedVideo(null)} aria-label="Fechar vídeo">
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 

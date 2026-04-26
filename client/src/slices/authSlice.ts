@@ -13,7 +13,6 @@ export interface AuthUser {
   created_at: string;
 }
 
-// Keep backward compat alias
 export type Student = AuthUser;
 
 interface AuthState {
@@ -21,16 +20,23 @@ interface AuthState {
   token: string | null;
   loading: boolean;
   error: string | null;
+  authChecked: boolean;
+  checkingSession: boolean;
 }
 
-const storedToken = localStorage.getItem('VestWeb_token');
-const storedUser = localStorage.getItem('VestWeb_user') || localStorage.getItem('VestWeb_student');
+const wipeLegacyAuthStorage = () => {
+  localStorage.removeItem('VestWeb_token');
+  localStorage.removeItem('VestWeb_user');
+  localStorage.removeItem('VestWeb_student');
+};
 
 const initialState: AuthState = {
-  user: storedUser ? JSON.parse(storedUser) : null,
-  token: storedToken,
+  user: null,
+  token: null,
   loading: false,
   error: null,
+  authChecked: false,
+  checkingSession: false,
 };
 
 export const loginThunk = createAsyncThunk(
@@ -64,46 +70,42 @@ export const fetchMe = createAsyncThunk(
       const res = await api.get('/auth/me');
       return res.data.data;
     } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Erro ao buscar usuário');
+      return rejectWithValue(err.response?.data?.message || 'Erro ao buscar usuario');
     }
   }
 );
 
 export const logoutThunk = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       await api.post('/auth/logout');
     } catch {
       // ignore
     }
-    localStorage.removeItem('VestWeb_token');
-    localStorage.removeItem('VestWeb_user');
-    localStorage.removeItem('VestWeb_student');
+    wipeLegacyAuthStorage();
   }
 );
-
-const persist = (token: string, user: AuthUser) => {
-  localStorage.setItem('VestWeb_token', token);
-  localStorage.setItem('VestWeb_user', JSON.stringify(user));
-  localStorage.removeItem('VestWeb_student');
-};
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setCredentials(state, action: PayloadAction<{ user: AuthUser; token: string }>) {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+    setCredentials(state, action: PayloadAction<{ user?: AuthUser; student?: AuthUser; token?: string | null }>) {
+      const nextUser = action.payload.user ?? action.payload.student ?? null;
+      state.user = nextUser;
+      state.token = action.payload.token ?? null;
+      state.authChecked = true;
+      state.checkingSession = false;
+      wipeLegacyAuthStorage();
     },
     clearAuth(state) {
       state.user = null;
       state.token = null;
       state.error = null;
-      localStorage.removeItem('VestWeb_token');
-      localStorage.removeItem('VestWeb_user');
-      localStorage.removeItem('VestWeb_student');
+      state.authChecked = true;
+      state.checkingSession = false;
+      wipeLegacyAuthStorage();
     },
     setError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
@@ -114,41 +116,72 @@ const authSlice = createSlice({
     updateUser(state, action: PayloadAction<Partial<AuthUser>>) {
       if (!state.user) return;
       state.user = { ...state.user, ...action.payload };
-      localStorage.setItem('VestWeb_user', JSON.stringify(state.user));
+      wipeLegacyAuthStorage();
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(loginThunk.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(loginThunk.fulfilled, (state, action) => {
+      .addCase(loginThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginThunk.fulfilled, (state, action: PayloadAction<{ user?: AuthUser; student?: AuthUser; token?: string }>) => {
+        const nextUser = action.payload.user ?? action.payload.student ?? null;
         state.loading = false;
-        state.token = action.payload.token;
-        state.user = action.payload.user ?? action.payload.student;
-        persist(action.payload.token, state.user!);
+        state.token = null;
+        state.user = nextUser;
+        state.authChecked = true;
+        state.checkingSession = false;
+        wipeLegacyAuthStorage();
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.authChecked = true;
+        state.checkingSession = false;
       })
-      .addCase(teacherLoginThunk.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(teacherLoginThunk.fulfilled, (state, action) => {
+      .addCase(teacherLoginThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(teacherLoginThunk.fulfilled, (state, action: PayloadAction<{ user?: AuthUser; student?: AuthUser; token?: string }>) => {
+        const nextUser = action.payload.user ?? action.payload.student ?? null;
         state.loading = false;
-        state.token = action.payload.token;
-        state.user = action.payload.user ?? action.payload.student;
-        persist(action.payload.token, state.user!);
+        state.token = null;
+        state.user = nextUser;
+        state.authChecked = true;
+        state.checkingSession = false;
+        wipeLegacyAuthStorage();
       })
       .addCase(teacherLoginThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.authChecked = true;
+        state.checkingSession = false;
       })
-      .addCase(fetchMe.fulfilled, (state, action) => {
+      .addCase(fetchMe.pending, (state) => {
+        state.checkingSession = true;
+      })
+      .addCase(fetchMe.fulfilled, (state, action: PayloadAction<AuthUser>) => {
         state.user = action.payload;
-        localStorage.setItem('VestWeb_user', JSON.stringify(action.payload));
+        state.token = null;
+        state.authChecked = true;
+        state.checkingSession = false;
+        wipeLegacyAuthStorage();
+      })
+      .addCase(fetchMe.rejected, (state) => {
+        state.user = null;
+        state.token = null;
+        state.authChecked = true;
+        state.checkingSession = false;
+        wipeLegacyAuthStorage();
       })
       .addCase(logoutThunk.fulfilled, (state) => {
         state.user = null;
         state.token = null;
         state.error = null;
+        state.authChecked = true;
+        state.checkingSession = false;
       });
   },
 });

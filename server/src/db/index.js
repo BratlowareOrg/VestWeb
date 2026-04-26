@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
 import 'dotenv/config';
+import logger from '../services/logger.js';
 
 const {
   DATABASE_URL,
@@ -8,6 +9,12 @@ const {
   DB_NAME = 'db_VestWeb',
   DB_USER = 'postgres',
   DB_PASSWORD = '',
+  DB_RUNTIME_USER,
+  DB_RUNTIME_PASSWORD,
+  DB_POOL_MAX = '20',
+  DB_POOL_MIN = '2',
+  DB_POOL_ACQUIRE = '30000',
+  DB_POOL_IDLE = '10000',
   NODE_ENV = 'development',
 } = process.env;
 

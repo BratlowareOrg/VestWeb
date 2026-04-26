@@ -9,14 +9,14 @@ export const getProfile = async (req, res) => {
     });
     return res.json({ message: 'Profile fetched', data: mentor });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const getMySessions = async (req, res) => {
   try {
     const mentor = await Mentor.findOne({ where: { student_id: req.user.id } });
-    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor não encontrado' });
+    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor nÃ£o encontrado' });
 
     const sessions = await MentoringSession.findAll({
       where: { mentor_id: mentor.id },
@@ -27,7 +27,7 @@ export const getMySessions = async (req, res) => {
     });
     return res.json({ message: 'Sessions fetched', data: sessions });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -37,7 +37,7 @@ export const updateSession = async (req, res) => {
     const { status, notes } = req.body;
 
     const session = await MentoringSession.findByPk(id);
-    if (!session) return res.status(404).json({ message: 'Sessão não encontrada' });
+    if (!session) return res.status(404).json({ message: 'SessÃ£o nÃ£o encontrada' });
 
     const mentor = await Mentor.findOne({ where: { student_id: req.user.id } });
     if (!mentor || session.mentor_id !== mentor.id) {
@@ -47,7 +47,7 @@ export const updateSession = async (req, res) => {
     await session.update({ status, notes: notes ?? session.notes });
     return res.json({ message: 'Session updated', data: session });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -63,7 +63,7 @@ export const getMyQuestions = async (req, res) => {
     });
     return res.json({ message: 'Questions fetched', data: questions });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -71,7 +71,7 @@ export const createQuestion = async (req, res) => {
   try {
     const { statement, topic_id, difficulty, source, year, bank, alternatives } = req.body;
     if (!statement || !topic_id || !difficulty) {
-      return res.status(400).json({ message: 'statement, topic_id e difficulty são obrigatórios' });
+      return res.status(400).json({ message: 'statement, topic_id e difficulty sÃ£o obrigatÃ³rios' });
     }
 
     const question = await Question.create({
@@ -93,7 +93,7 @@ export const createQuestion = async (req, res) => {
 
     return res.status(201).json({ message: 'Question created', data: full });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -101,7 +101,7 @@ export const updateQuestion = async (req, res) => {
   try {
     const { id } = req.params;
     const question = await Question.findByPk(id);
-    if (!question) return res.status(404).json({ message: 'Questão não encontrada' });
+    if (!question) return res.status(404).json({ message: 'QuestÃ£o nÃ£o encontrada' });
 
     if (question.created_by !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Forbidden' });
@@ -111,14 +111,14 @@ export const updateQuestion = async (req, res) => {
     await question.update({ statement, topic_id, difficulty, source, year, bank });
     return res.json({ message: 'Question updated', data: question });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const getActivity = async (req, res) => {
   try {
     const mentor = await Mentor.findOne({ where: { student_id: req.user.id } });
-    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor não encontrado' });
+    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor nÃ£o encontrado' });
 
     // 1. Recent mentoring session bookings
     const recentSessions = await MentoringSession.findAll({
@@ -189,21 +189,21 @@ export const getActivity = async (req, res) => {
 
     return res.json({ message: 'Activity fetched', data: events });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const getInsights = async (req, res) => {
   try {
     const mentor = await Mentor.findOne({ where: { student_id: req.user.id } });
-    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor não encontrado' });
+    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor nÃ£o encontrado' });
 
     // Period filter: today | 7d | 30d (default: 7d)
     const period = req.query.period ?? '7d';
     const msMap = { today: 24 * 60 * 60 * 1000, '7d': 7 * 24 * 60 * 60 * 1000, '30d': 30 * 24 * 60 * 60 * 1000 };
     const since = new Date(Date.now() - (msMap[period] ?? msMap['7d']));
 
-    // Pending doubts — always all-time (unanswered = needs attention regardless of age)
+    // Pending doubts â€” always all-time (unanswered = needs attention regardless of age)
     const pendingDoubts = await StudentDoubt.count({
       where: { mentor_id: mentor.id, answered: false },
     });
@@ -269,7 +269,7 @@ export const getInsights = async (req, res) => {
       data: { pendingDoubts, activeStudents, avgRating, ratingCount: doneSessions.length, videoStats },
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -277,7 +277,7 @@ export const deleteQuestion = async (req, res) => {
   try {
     const { id } = req.params;
     const question = await Question.findByPk(id);
-    if (!question) return res.status(404).json({ message: 'Questão não encontrada' });
+    if (!question) return res.status(404).json({ message: 'QuestÃ£o nÃ£o encontrada' });
 
     if (question.created_by !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Forbidden' });
@@ -286,16 +286,16 @@ export const deleteQuestion = async (req, res) => {
     await question.destroy();
     return res.json({ message: 'Question deleted' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-// ── Announcements ──────────────────────────────────────────────────────────────
+// â”€â”€ Announcements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const getMyAnnouncements = async (req, res) => {
   try {
     const mentor = await Mentor.findOne({ where: { student_id: req.user.id } });
-    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor não encontrado' });
+    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor nÃ£o encontrado' });
 
     const announcements = await Announcement.findAll({
       where: { mentor_id: mentor.id },
@@ -303,17 +303,17 @@ export const getMyAnnouncements = async (req, res) => {
     });
     return res.json({ message: 'Announcements fetched', data: announcements });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const createAnnouncement = async (req, res) => {
   try {
     const mentor = await Mentor.findOne({ where: { student_id: req.user.id } });
-    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor não encontrado' });
+    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor nÃ£o encontrado' });
 
     const { content, expires_at } = req.body;
-    if (!content?.trim()) return res.status(400).json({ message: 'Conteúdo obrigatório' });
+    if (!content?.trim()) return res.status(400).json({ message: 'ConteÃºdo obrigatÃ³rio' });
 
     const announcement = await Announcement.create({
       mentor_id: mentor.id,
@@ -322,23 +322,23 @@ export const createAnnouncement = async (req, res) => {
     });
     return res.status(201).json({ message: 'Announcement created', data: announcement });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 export const deleteAnnouncement = async (req, res) => {
   try {
     const mentor = await Mentor.findOne({ where: { student_id: req.user.id } });
-    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor não encontrado' });
+    if (!mentor) return res.status(404).json({ message: 'Perfil de mentor nÃ£o encontrado' });
 
     const announcement = await Announcement.findByPk(req.params.id);
-    if (!announcement) return res.status(404).json({ message: 'Aviso não encontrado' });
+    if (!announcement) return res.status(404).json({ message: 'Aviso nÃ£o encontrado' });
     if (announcement.mentor_id !== mentor.id) return res.status(403).json({ message: 'Forbidden' });
 
     await announcement.destroy();
     return res.json({ message: 'Announcement deleted' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -371,6 +371,6 @@ export const getAnnouncementsFeed = async (req, res) => {
 
     return res.json({ message: 'Feed fetched', data: announcements });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

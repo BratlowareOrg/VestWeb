@@ -376,8 +376,9 @@ const handleContact = async (e: React.FormEvent) => {
             <h3>Envie sua mensagem</h3>
             <form onSubmit={handleContact}>
               <div className="form-group">
-                <label>Nome</label>
+                <label htmlFor="contact-name">Nome</label>
                 <input
+                  id="contact-name"
                   type="text"
                   className="form-control"
                   placeholder="Seu nome completo"
@@ -387,8 +388,9 @@ const handleContact = async (e: React.FormEvent) => {
                 />
               </div>
               <div className="form-group">
-                <label>E-mail</label>
+                <label htmlFor="contact-email">E-mail</label>
                 <input
+                  id="contact-email"
                   type="email"
                   className="form-control"
                   placeholder="seu@email.com"
@@ -398,8 +400,9 @@ const handleContact = async (e: React.FormEvent) => {
                 />
               </div>
               <div className="form-group">
-                <label>Mensagem</label>
+                <label htmlFor="contact-message">Mensagem</label>
                 <textarea
+                  id="contact-message"
                   className="form-control"
                   placeholder="Escreva sua mensagem..."
                   value={contactForm.message}

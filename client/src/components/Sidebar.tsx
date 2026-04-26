@@ -75,7 +75,7 @@ const Sidebar = ({ navItems = defaultNavItems, roleLabel }: SidebarProps) => {
       <aside className={`sidebar${open ? ' open' : ''}${collapsed ? ' collapsed' : ''}`}>
         <div className="sidebar-header">
           <Link to="/" className="sidebar-logo">
-            <img src={logo} alt="VestWeb" className="sidebar-logo-img" />
+            <img src={logo} alt="VestWeb" className="sidebar-logo-img" width={120} height={32} decoding="async" />
           </Link>
           <button
             className="sidebar-collapse-btn"
@@ -90,7 +90,7 @@ const Sidebar = ({ navItems = defaultNavItems, roleLabel }: SidebarProps) => {
           <div className="sidebar-user">
             <div className="sidebar-avatar">
               {student.avatar_url ? (
-                <img src={student.avatar_url} alt={student.name} />
+                <img src={student.avatar_url} alt={student.name} width={40} height={40} loading="lazy" decoding="async" />
               ) : (
                 getInitials(student.name)
               )}

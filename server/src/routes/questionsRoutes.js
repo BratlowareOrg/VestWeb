@@ -6,6 +6,11 @@ import {
 } from '../controllers/questionsController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import requireTeacher from '../middlewares/requireTeacher.js';
+import { validateBody } from '../middlewares/schemaValidationMiddleware.js';
+import {
+  setTargetVestibularBodySchema,
+  submitAnswerBodySchema,
+} from '../validators/questionsSchemas.js';
 
 const router = Router();
 
@@ -19,7 +24,7 @@ router.post('/', authMiddleware, requireTeacher, createQuestion);
 router.put('/:id', authMiddleware, requireTeacher, updateQuestion);
 router.delete('/:id', authMiddleware, requireTeacher, deleteQuestion);
 router.post('/session', authMiddleware, startPracticeSession);
-router.post('/answer', authMiddleware, submitAnswer);
-router.post('/target-vestibular', authMiddleware, setTargetVestibular);
+router.post('/answer', authMiddleware, validateBody(submitAnswerBodySchema), submitAnswer);
+router.post('/target-vestibular', authMiddleware, validateBody(setTargetVestibularBodySchema), setTargetVestibular);
 
 export default router;

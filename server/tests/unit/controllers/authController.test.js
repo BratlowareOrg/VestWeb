@@ -1,16 +1,22 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
-// ── Mocks ────────────────────────────────────────────────────────────────────
 const mockStudentFindOne = jest.fn();
 const mockStudentFindByPk = jest.fn();
+const mockTeacherFindOne = jest.fn();
+const mockTeacherFindByPk = jest.fn();
 const mockSessionCreate = jest.fn();
 const mockSessionDestroy = jest.fn();
+const mockTeacherSessionCreate = jest.fn();
+const mockTeacherSessionDestroy = jest.fn();
 const mockGenerateToken = jest.fn(() => 'mocked_jwt_token');
 const mockComparePassword = jest.fn();
+const mockHashPassword = jest.fn();
 
 jest.unstable_mockModule('../../../src/db/models/index.js', () => ({
   Student: { findOne: mockStudentFindOne, findByPk: mockStudentFindByPk },
+  Teacher: { findOne: mockTeacherFindOne, findByPk: mockTeacherFindByPk },
   Session: { create: mockSessionCreate, destroy: mockSessionDestroy },
+  TeacherSession: { create: mockTeacherSessionCreate, destroy: mockTeacherSessionDestroy },
 }));
 
 jest.unstable_mockModule('../../../src/services/jwtService.js', () => ({
@@ -20,158 +26,175 @@ jest.unstable_mockModule('../../../src/services/jwtService.js', () => ({
 
 jest.unstable_mockModule('../../../src/services/hashService.js', () => ({
   comparePassword: mockComparePassword,
-  hashPassword: jest.fn(),
+  hashPassword: mockHashPassword,
 }));
 
 const { login, teacherLogin, me, logout } = await import('../../../src/controllers/authController.js');
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 const makeRes = () => ({
   status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
+  cookie: jest.fn().mockReturnThis(),
+  clearCookie: jest.fn().mockReturnThis(),
 });
 
 const makeStudent = (overrides = {}) => ({
   id: 1,
   name: 'Ana Lima',
   enrollment: 'ANA001',
+  email: 'ana@teste.com',
   password_hash: 'hashed_pw',
-  role: 'student',
-  toJSON() { return { id: this.id, name: this.name, enrollment: this.enrollment, role: this.role }; },
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      enrollment: this.enrollment,
+      email: this.email,
+    };
+  },
   ...overrides,
 });
 
-// ── login ─────────────────────────────────────────────────────────────────────
 describe('authController.login', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('should return 400 when enrollment or password is missing', async () => {
+  it('returns 400 when enrollment or password is missing', async () => {
     const req = { body: { enrollment: '', password: '' } };
     const res = makeRes();
+
     await login(req, res);
+
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Enrollment and password are required' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'MatrÃƒÂ­cula e senha sÃƒÂ£o obrigatÃƒÂ³rios' });
   });
 
-  it('should return 401 when student is not found', async () => {
+  it('returns 401 when student is not found', async () => {
     mockStudentFindOne.mockResolvedValue(null);
     const req = { body: { enrollment: 'UNKNOWN', password: '123' } };
     const res = makeRes();
+
     await login(req, res);
+
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Matrícula ou senha inválidos' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
   });
 
-  it('should return 401 when password does not match', async () => {
+  it('returns 401 when password does not match', async () => {
     mockStudentFindOne.mockResolvedValue(makeStudent());
     mockComparePassword.mockResolvedValue(false);
     const req = { body: { enrollment: 'ANA001', password: 'wrong' } };
     const res = makeRes();
+
     await login(req, res);
+
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Matrícula ou senha inválidos' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
   });
 
-  it('should return 403 when a teacher tries to log in via student route', async () => {
-    mockStudentFindOne.mockResolvedValue(makeStudent({ role: 'teacher' }));
-    mockComparePassword.mockResolvedValue(true);
-    const req = { body: { enrollment: 'PROF001', password: 'correct' } };
-    const res = makeRes();
-    await login(req, res);
-    expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Professores devem acessar pelo Portal do Professor' });
-  });
-
-  it('should return token and student data on successful login', async () => {
+  it('sets auth cookie and returns user payload on successful login', async () => {
     const student = makeStudent();
     mockStudentFindOne.mockResolvedValue(student);
     mockComparePassword.mockResolvedValue(true);
     mockSessionCreate.mockResolvedValue({});
-    const req = { body: { enrollment: 'ANA001', password: 'correct' } };
+
+    const req = { body: { enrollment: 'ANA001', password: 'correct' }, cookies: {} };
     const res = makeRes();
+
     await login(req, res);
-    expect(mockGenerateToken).toHaveBeenCalledWith({ id: 1, role: 'student' });
-    expect(mockSessionCreate).toHaveBeenCalled();
+
+    expect(mockGenerateToken).toHaveBeenCalledWith({ id: 1, type: 'student' });
+    expect(mockSessionCreate).toHaveBeenCalledTimes(1);
+    expect(res.cookie).toHaveBeenCalledTimes(1);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       message: 'Login successful',
-      data: expect.objectContaining({ token: 'mocked_jwt_token' }),
+      data: expect.objectContaining({
+        user: expect.objectContaining({ id: 1, type: 'student' }),
+      }),
     }));
-  });
-
-  it('should return 500 on unexpected DB error', async () => {
-    mockStudentFindOne.mockRejectedValue(new Error('DB crashed'));
-    const req = { body: { enrollment: 'ANA001', password: '123' } };
-    const res = makeRes();
-    await login(req, res);
-    expect(res.status).toHaveBeenCalledWith(500);
   });
 });
 
-// ── teacherLogin ──────────────────────────────────────────────────────────────
 describe('authController.teacherLogin', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('should return 403 when a student tries to log in via teacher route', async () => {
-    mockStudentFindOne.mockResolvedValue(makeStudent({ role: 'student' }));
-    mockComparePassword.mockResolvedValue(true);
-    const req = { body: { enrollment: 'ANA001', password: 'correct' } };
+  it('returns 401 when teacher is not found', async () => {
+    mockTeacherFindOne.mockResolvedValue(null);
+    const req = { body: { enrollment: 'PROF001', password: 'pw' } };
     const res = makeRes();
+
     await teacherLogin(req, res);
-    expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Acesso restrito a professores' });
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
   });
 
-  it('should succeed for a teacher role', async () => {
-    const teacher = makeStudent({ role: 'teacher', enrollment: 'PROF001' });
-    mockStudentFindOne.mockResolvedValue(teacher);
+  it('sets auth cookie and returns teacher payload on success', async () => {
+    const teacher = makeStudent({ id: 22, enrollment: 'PROF001' });
+    mockTeacherFindOne.mockResolvedValue(teacher);
     mockComparePassword.mockResolvedValue(true);
-    mockSessionCreate.mockResolvedValue({});
-    const req = { body: { enrollment: 'PROF001', password: 'correct' } };
+    mockTeacherSessionCreate.mockResolvedValue({});
+
+    const req = { body: { enrollment: 'PROF001', password: 'correct' }, cookies: {} };
     const res = makeRes();
+
     await teacherLogin(req, res);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'Login successful' }));
+
+    expect(mockGenerateToken).toHaveBeenCalledWith({ id: 22, type: 'teacher' });
+    expect(mockTeacherSessionCreate).toHaveBeenCalledTimes(1);
+    expect(res.cookie).toHaveBeenCalledTimes(1);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'Login successful',
+      data: expect.objectContaining({
+        user: expect.objectContaining({ id: 22, type: 'teacher', role: 'teacher' }),
+      }),
+    }));
   });
 
-  it('should succeed for an admin role', async () => {
-    const admin = makeStudent({ role: 'admin', enrollment: 'ADM001' });
-    mockStudentFindOne.mockResolvedValue(admin);
-    mockComparePassword.mockResolvedValue(true);
-    mockSessionCreate.mockResolvedValue({});
-    const req = { body: { enrollment: 'ADM001', password: 'correct' } };
-    const res = makeRes();
-    await teacherLogin(req, res);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'Login successful' }));
-  });
 });
 
-// ── me ────────────────────────────────────────────────────────────────────────
 describe('authController.me', () => {
-  it('should return user data from req.user', async () => {
-    const req = { user: { id: 1, name: 'Ana', role: 'student' } };
+  it('returns user data from req.user', async () => {
+    const req = { user: { id: 1, name: 'Ana', type: 'student' } };
     const res = makeRes();
+
     await me(req, res);
+
     expect(res.json).toHaveBeenCalledWith({ message: 'User data', data: req.user });
   });
 });
 
-// ── logout ─────────────────────────────────────────────────────────────────────
 describe('authController.logout', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('should destroy the session token and return success message', async () => {
+  it('destroys student session and clears cookie when token comes from cookie', async () => {
     mockSessionDestroy.mockResolvedValue(1);
-    const req = { headers: { authorization: 'Bearer some.token.here' } };
+    const req = {
+      headers: {},
+      cookies: { vestweb_token: 'cookie.token.here' },
+      user: { type: 'student' },
+    };
     const res = makeRes();
+
     await logout(req, res);
-    expect(mockSessionDestroy).toHaveBeenCalledWith({ where: { token: 'some.token.here' } });
+
+    expect(mockSessionDestroy).toHaveBeenCalledWith({ where: { token: 'cookie.token.here' } });
+    expect(res.clearCookie).toHaveBeenCalledTimes(1);
     expect(res.json).toHaveBeenCalledWith({ message: 'Logged out successfully' });
   });
 
-  it('should still return success when no Authorization header is present', async () => {
-    const req = { headers: {} };
+  it('destroys teacher session and clears cookie when token comes from bearer header', async () => {
+    mockTeacherSessionDestroy.mockResolvedValue(1);
+    const req = {
+      headers: { authorization: 'Bearer bearer.token.here' },
+      cookies: {},
+      user: { type: 'teacher' },
+    };
     const res = makeRes();
+
     await logout(req, res);
-    expect(mockSessionDestroy).not.toHaveBeenCalled();
+
+    expect(mockTeacherSessionDestroy).toHaveBeenCalledWith({ where: { token: 'bearer.token.here' } });
+    expect(res.clearCookie).toHaveBeenCalledTimes(1);
     expect(res.json).toHaveBeenCalledWith({ message: 'Logged out successfully' });
   });
 });

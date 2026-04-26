@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Eye, EyeOff } from 'lucide-react';
 import logo from '../../assets/images/logo.png';
-import { loginThunk } from '../../slices/authSlice';
+import { fetchMe, loginThunk } from '../../slices/authSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { isTeacherRole } from '../../utils/roles';
 import './LoginPage.css';
@@ -17,18 +17,25 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading, error, token } = useSelector((state: RootState) => state.auth);
-  const role = useSelector((state: RootState) => state.auth.user?.role);
+  const { loading, error, user, authChecked, checkingSession } = useSelector((state: RootState) => state.auth);
+  const role = user?.role;
 
   useEffect(() => {
-    if (token && role) navigate(getRedirectPath(role));
-  }, [token, role, navigate]);
+    if (!authChecked && !checkingSession) {
+      dispatch(fetchMe());
+    }
+  }, [authChecked, checkingSession, dispatch]);
+
+  useEffect(() => {
+    if (user && role) navigate(getRedirectPath(role));
+  }, [user, role, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await dispatch(loginThunk({ enrollment, password }));
     if (loginThunk.fulfilled.match(result)) {
-      navigate(getRedirectPath(result.payload.user?.role ?? result.payload.student?.role));
+      const userRole = result.payload.user?.role ?? result.payload.student?.role;
+      if (userRole) navigate(getRedirectPath(userRole));
     }
   };
 
@@ -38,7 +45,7 @@ const LoginPage = () => {
         <div className="login-left-pattern" />
         <div className="login-left-content">
           <div className="login-left-logo">
-            <img src={logo} alt="VestWeb" className="login-logo-img" />
+            <img src={logo} alt="VestWeb" className="login-logo-img" width={168} height={48} decoding="async" />
           </div>
           <h1 className="login-left-title">Bem-vindo de volta!</h1>
           <p className="login-left-subtitle">
@@ -65,7 +72,7 @@ const LoginPage = () => {
       <div className="login-right">
         <div className="login-card">
           <div className="login-card-logo">
-            <img src={logo} alt="VestWeb" className="login-logo-img" />
+            <img src={logo} alt="VestWeb" className="login-logo-img" width={168} height={48} decoding="async" />
           </div>
           <h2>Acesse sua conta</h2>
           <p>Entre com sua matricula e senha para continuar.</p>
@@ -130,3 +137,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

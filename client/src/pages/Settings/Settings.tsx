@@ -342,6 +342,10 @@ const Settings = () => {
                           src={profile.watch('avatar_url')}
                           alt="Avatar"
                           onError={e => (e.currentTarget.style.display = 'none')}
+                          width={96}
+                          height={96}
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         getInitials(profile.watch('name') || student?.name || '')
@@ -528,8 +532,8 @@ const Settings = () => {
                       <div className="toggle-label">{item.label}</div>
                       <div className="toggle-desc">{item.desc}</div>
                     </div>
-                    <label className="toggle-switch" aria-label={item.label}>
-                      <input type="checkbox" defaultChecked={i < 2} />
+                    <label htmlFor={`settings-notification-toggle-${i}`} className="toggle-switch" aria-label={item.label}>
+                      <input id={`settings-notification-toggle-${i}`} type="checkbox" defaultChecked={i < 2} />
                       <span className="toggle-track" />
                     </label>
                   </div>
@@ -554,8 +558,8 @@ const Settings = () => {
                       <div className="toggle-label">{item.label}</div>
                       <div className="toggle-desc">{item.desc}</div>
                     </div>
-                    <label className="toggle-switch" aria-label={item.label}>
-                      <input type="checkbox" defaultChecked={i < 2} />
+                    <label htmlFor={`settings-privacy-toggle-${i}`} className="toggle-switch" aria-label={item.label}>
+                      <input id={`settings-privacy-toggle-${i}`} type="checkbox" defaultChecked={i < 2} />
                       <span className="toggle-track" />
                     </label>
                   </div>

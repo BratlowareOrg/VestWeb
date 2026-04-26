@@ -1,5 +1,5 @@
-:root {
-  --teacher-accent: #f59e0b;
+﻿:root {
+  --teacher-accent: var(--color-warning);
   --teacher-accent-dark: #d97706;
 }
 
@@ -55,14 +55,14 @@
 
 .teacher-login-left-title {
   font-size: 32px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: white;
   margin-bottom: 16px;
   line-height: 1.2;
 }
 
 .teacher-login-left-subtitle {
-  font-size: 16px;
+  font-size: var(--text-base);
   color: rgba(255, 255, 255, 0.65);
   line-height: 1.7;
   margin-bottom: 40px;
@@ -80,7 +80,7 @@
   align-items: center;
   gap: 14px;
   color: rgba(255, 255, 255, 1);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .teacher-login-left-feature-icon {
@@ -88,7 +88,7 @@
   height: 32px;
   background: rgba(245, 158, 11, 0.2);
   border: 1px solid rgba(245, 158, 11, 0.4);
-  border-radius: 8px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,23 +131,23 @@
   background: rgba(245, 158, 11, 0.12);
   color: var(--teacher-accent);
   border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   padding: 4px 14px;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
   letter-spacing: 0.5px;
   margin-bottom: 20px;
 }
 
 .teacher-login-card h2 {
   font-size: 26px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--text);
   margin-bottom: 8px;
 }
 
 .teacher-login-card p {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   margin-bottom: 32px;
 }
@@ -160,7 +160,7 @@
   border: none;
   border-radius: var(--radius);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   cursor: pointer;
   transition: var(--transition);
   margin-bottom: 16px;
@@ -179,14 +179,14 @@
 
 .teacher-login-error {
   background: #fff5f5;
-  color: #dc2626;
+  color: var(--color-error);
   padding: 12px 16px;
   border-radius: var(--radius);
-  font-size: 14px;
+  font-size: var(--text-sm);
   margin-bottom: 16px;
   text-align: center;
-  border: 1px solid #fca5a5;
-  border-left: 4px solid #ef4444;
+  border: 1px solid var(--color-error-light);
+  border-left: 4px solid var(--color-error);
 }
 
 .teacher-login-divider {
@@ -212,10 +212,10 @@
 }
 
 .teacher-login-student-link a {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--primary);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   transition: var(--transition);
 }
 
@@ -230,7 +230,7 @@
 }
 
 .teacher-login-back a {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   text-decoration: none;
   transition: var(--transition);

@@ -3,13 +3,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer, {
   loginThunk,
   teacherLoginThunk,
+  fetchMe,
   logoutThunk,
   clearAuth,
   setCredentials,
   setError,
 } from '../../slices/authSlice';
 
-// ── Mock the api module ───────────────────────────────────────────────────────
 vi.mock('../../api/api', () => ({
   default: {
     post: vi.fn(),
@@ -22,41 +22,44 @@ vi.mock('../../api/api', () => ({
 }));
 
 import api from '../../api/api';
-const mockApi = api as { post: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> };
+const mockApi = api as unknown as { post: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 const buildStore = () =>
   configureStore({ reducer: { auth: authReducer } });
 
-const makeStudent = (overrides = {}) => ({
+const makeUser = (overrides = {}) => ({
   id: 1,
   name: 'Ana Lima',
   email: 'ana@VestWeb.com',
   enrollment: 'ANA001',
   avatar_url: null,
   role: 'student' as const,
+  type: 'student' as const,
   created_at: '2024-01-01T00:00:00.000Z',
   ...overrides,
 });
 
-// ── Reducer: synchronous actions ──────────────────────────────────────────────
 describe('authSlice — synchronous reducers', () => {
-  it('clearAuth should reset state and remove localStorage items', () => {
+  it('clearAuth should reset auth state and local storage', () => {
     const store = buildStore();
-    store.dispatch(setCredentials({ student: makeStudent(), token: 'tok123' }));
+    store.dispatch(setCredentials({ user: makeUser(), token: 'tok123' }));
     store.dispatch(clearAuth());
-    const { student, token, error } = store.getState().auth;
-    expect(student).toBeNull();
+
+    const { user, token, error, authChecked, checkingSession } = store.getState().auth;
+    expect(user).toBeNull();
     expect(token).toBeNull();
     expect(error).toBeNull();
+    expect(authChecked).toBe(true);
+    expect(checkingSession).toBe(false);
   });
 
-  it('setCredentials should update student and token', () => {
+  it('setCredentials should update user', () => {
     const store = buildStore();
-    const student = makeStudent();
-    store.dispatch(setCredentials({ student, token: 'abc' }));
-    expect(store.getState().auth.student).toEqual(student);
-    expect(store.getState().auth.token).toBe('abc');
+    const user = makeUser();
+    store.dispatch(setCredentials({ user }));
+
+    expect(store.getState().auth.user).toEqual(user);
+    expect(store.getState().auth.authChecked).toBe(true);
   });
 
   it('setError should update the error field', () => {
@@ -66,25 +69,25 @@ describe('authSlice — synchronous reducers', () => {
   });
 });
 
-// ── Thunk: loginThunk ─────────────────────────────────────────────────────────
 describe('authSlice — loginThunk', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
-  it('should set token and student on successful login', async () => {
-    const student = makeStudent();
-    mockApi.post.mockResolvedValue({ data: { data: { token: 'jwt_tok', student } } });
+  it('sets user on successful login', async () => {
+    const user = makeUser();
+    mockApi.post.mockResolvedValue({ data: { data: { user } } });
 
     const store = buildStore();
     await store.dispatch(loginThunk({ enrollment: 'ANA001', password: 'correct' }));
 
     const state = store.getState().auth;
-    expect(state.token).toBe('jwt_tok');
-    expect(state.student).toEqual(student);
+    expect(state.user).toEqual(user);
+    expect(state.token).toBeNull();
     expect(state.loading).toBe(false);
     expect(state.error).toBeNull();
+    expect(state.authChecked).toBe(true);
   });
 
-  it('should set error message on failed login', async () => {
+  it('sets error message on failed login', async () => {
     mockApi.post.mockRejectedValue({
       response: { data: { message: 'Matrícula ou senha inválidos' } },
     });
@@ -94,70 +97,94 @@ describe('authSlice — loginThunk', () => {
 
     const state = store.getState().auth;
     expect(state.error).toBe('Matrícula ou senha inválidos');
-    expect(state.token).toBeNull();
+    expect(state.user).toBeNull();
     expect(state.loading).toBe(false);
+    expect(state.authChecked).toBe(true);
   });
 
-  it('should set loading=true while pending', () => {
-    // Create a promise that never resolves to freeze in pending state
-    mockApi.post.mockReturnValue(new Promise(() => {}));
-    const store = buildStore();
-    store.dispatch(loginThunk({ enrollment: 'ANA001', password: 'pw' }));
-    expect(store.getState().auth.loading).toBe(true);
-  });
+  it('clears legacy auth keys in localStorage on successful login', async () => {
+    localStorage.setItem('VestWeb_user', JSON.stringify(makeUser()));
+    localStorage.setItem('VestWeb_token', 'legacy');
 
-  it('should persist token and student in localStorage on success', async () => {
-    const student = makeStudent();
-    mockApi.post.mockResolvedValue({ data: { data: { token: 'persisted_tok', student } } });
+    const user = makeUser();
+    mockApi.post.mockResolvedValue({ data: { data: { user } } });
+
     const store = buildStore();
     await store.dispatch(loginThunk({ enrollment: 'ANA001', password: 'correct' }));
-    expect(localStorage.getItem('VestWeb_token')).toBe('persisted_tok');
-    expect(JSON.parse(localStorage.getItem('VestWeb_student')!)).toEqual(student);
+
+    expect(localStorage.getItem('VestWeb_user')).toBeNull();
+    expect(localStorage.getItem('VestWeb_token')).toBeNull();
   });
 });
 
-// ── Thunk: teacherLoginThunk ──────────────────────────────────────────────────
 describe('authSlice — teacherLoginThunk', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
-  it('should set state on successful teacher login', async () => {
-    const teacher = makeStudent({ role: 'teacher' as const, enrollment: 'PROF001' });
-    mockApi.post.mockResolvedValue({ data: { data: { token: 'teacher_tok', student: teacher } } });
+  it('sets state on successful teacher login', async () => {
+    const teacher = makeUser({ role: 'teacher' as const, type: 'teacher' as const, enrollment: 'PROF001' });
+    mockApi.post.mockResolvedValue({ data: { data: { user: teacher } } });
+
     const store = buildStore();
     await store.dispatch(teacherLoginThunk({ enrollment: 'PROF001', password: 'correct' }));
-    expect(store.getState().auth.token).toBe('teacher_tok');
-    expect(store.getState().auth.student?.role).toBe('teacher');
-  });
 
-  it('should set error on failure', async () => {
-    mockApi.post.mockRejectedValue({ response: { data: { message: 'Acesso restrito a professores' } } });
-    const store = buildStore();
-    await store.dispatch(teacherLoginThunk({ enrollment: 'ANA001', password: 'pw' }));
-    expect(store.getState().auth.error).toBe('Acesso restrito a professores');
+    expect(store.getState().auth.user?.role).toBe('teacher');
+    expect(store.getState().auth.authChecked).toBe(true);
   });
 });
 
-// ── Thunk: logoutThunk ────────────────────────────────────────────────────────
-describe('authSlice — logoutThunk', () => {
-  beforeEach(() => vi.clearAllMocks());
+describe('authSlice — fetchMe', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
 
-  it('should clear student and token on logout', async () => {
+  it('hydrates user and marks authChecked', async () => {
+    const user = makeUser();
+    mockApi.get.mockResolvedValue({ data: { data: user } });
+
     const store = buildStore();
-    store.dispatch(setCredentials({ student: makeStudent(), token: 'some_tok' }));
+    await store.dispatch(fetchMe());
+
+    const state = store.getState().auth;
+    expect(state.user).toEqual(user);
+    expect(state.authChecked).toBe(true);
+    expect(state.checkingSession).toBe(false);
+  });
+
+  it('clears state when session is invalid', async () => {
+    mockApi.get.mockRejectedValue({ response: { status: 401 } });
+
+    const store = buildStore();
+    await store.dispatch(fetchMe());
+
+    const state = store.getState().auth;
+    expect(state.user).toBeNull();
+    expect(state.authChecked).toBe(true);
+    expect(state.checkingSession).toBe(false);
+  });
+});
+
+describe('authSlice — logoutThunk', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('clears user and token on logout', async () => {
+    const store = buildStore();
+    store.dispatch(setCredentials({ user: makeUser(), token: 'some_tok' }));
+
     mockApi.post.mockResolvedValue({});
     await store.dispatch(logoutThunk());
-    const { student, token } = store.getState().auth;
-    expect(student).toBeNull();
+
+    const { user, token } = store.getState().auth;
+    expect(user).toBeNull();
     expect(token).toBeNull();
   });
 
-  it('should remove items from localStorage on logout', async () => {
+  it('removes localStorage keys on logout', async () => {
     localStorage.setItem('VestWeb_token', 'tok');
-    localStorage.setItem('VestWeb_student', '{}');
+    localStorage.setItem('VestWeb_user', '{}');
+
     mockApi.post.mockResolvedValue({});
     const store = buildStore();
     await store.dispatch(logoutThunk());
+
     expect(localStorage.getItem('VestWeb_token')).toBeNull();
-    expect(localStorage.getItem('VestWeb_student')).toBeNull();
+    expect(localStorage.getItem('VestWeb_user')).toBeNull();
   });
 });

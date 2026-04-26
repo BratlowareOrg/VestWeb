@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Eye, EyeOff, BookOpen, Users, BarChart2, Award } from 'lucide-react';
 import logo from '../../assets/images/logo.png';
-import { teacherLoginThunk } from '../../slices/authSlice';
+import { fetchMe, teacherLoginThunk } from '../../slices/authSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { isTeacherRole } from '../../utils/roles';
 import './TeacherLoginPage.css';
@@ -14,12 +14,18 @@ const TeacherLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading, error, token } = useSelector((state: RootState) => state.auth);
-  const role = useSelector((state: RootState) => state.auth.user?.role);
+  const { loading, error, user, authChecked, checkingSession } = useSelector((state: RootState) => state.auth);
+  const role = user?.role;
 
   useEffect(() => {
-    if (token && role && isTeacherRole(role)) navigate('/teacher/home');
-  }, [token, role, navigate]);
+    if (!authChecked && !checkingSession) {
+      dispatch(fetchMe());
+    }
+  }, [authChecked, checkingSession, dispatch]);
+
+  useEffect(() => {
+    if (user && role && isTeacherRole(role)) navigate('/teacher/home');
+  }, [user, role, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +41,7 @@ const TeacherLoginPage = () => {
         <div className="teacher-login-left-pattern" />
         <div className="teacher-login-left-content">
           <div className="teacher-login-left-logo">
-            <img src={logo} alt="VestWeb" className="login-logo-img" />
+            <img src={logo} alt="VestWeb" className="login-logo-img" width={168} height={48} decoding="async" />
           </div>
           <h1 className="teacher-login-left-title">Portal do Professor</h1>
           <p className="teacher-login-left-subtitle">
@@ -60,7 +66,7 @@ const TeacherLoginPage = () => {
       <div className="teacher-login-right">
         <div className="teacher-login-card">
           <div className="teacher-login-card-logo">
-            <img src={logo} alt="VestWeb" className="login-logo-img" />
+            <img src={logo} alt="VestWeb" className="login-logo-img" width={168} height={48} decoding="async" />
           </div>
           <div className="teacher-login-badge">Área do Professor</div>
           <h2>Acesse o portal</h2>
@@ -129,3 +135,4 @@ const TeacherLoginPage = () => {
 };
 
 export default TeacherLoginPage;
+

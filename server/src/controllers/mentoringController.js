@@ -8,7 +8,7 @@ export const getMentors = async (req, res) => {
     });
     return res.json({ message: 'Mentors fetched', data: mentors });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -27,7 +27,7 @@ export const getSessions = async (req, res) => {
     });
     return res.json({ message: 'Sessions fetched', data: sessions });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -47,7 +47,7 @@ export const bookSession = async (req, res) => {
 
     return res.status(201).json({ message: 'Session booked', data: session });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -67,6 +67,6 @@ export const updateSessionStatus = async (req, res) => {
     await session.update({ status, notes: notes ?? session.notes });
     return res.json({ message: 'Session updated', data: session });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

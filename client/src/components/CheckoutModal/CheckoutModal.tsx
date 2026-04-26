@@ -192,8 +192,9 @@ export default function CheckoutModal({
         {/* Formulário */}
         <form className="checkout-form" onSubmit={handleSubmit}>
           <div className="checkout-field">
-            <label>Nome completo</label>
+            <label htmlFor="checkout-name">Nome completo</label>
             <input
+              id="checkout-name"
               type="text"
               placeholder="Seu nome"
               value={name}
@@ -203,8 +204,9 @@ export default function CheckoutModal({
           </div>
 
           <div className="checkout-field">
-            <label>E-mail</label>
+            <label htmlFor="checkout-email">E-mail</label>
             <input
+              id="checkout-email"
               type="email"
               placeholder="seu@email.com"
               value={email}
@@ -215,9 +217,10 @@ export default function CheckoutModal({
 
           <>
             <div className="checkout-field">
-                <label>Senha</label>
+                <label htmlFor="checkout-password">Senha</label>
                 <div className="checkout-password-wrapper">
                   <input
+                    id="checkout-password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Mínimo 8 caracteres"
                     value={password}
@@ -229,15 +232,17 @@ export default function CheckoutModal({
                     className="checkout-password-toggle"
                     onClick={() => setShowPassword(v => !v)}
                     tabIndex={-1}
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
                   </button>
                 </div>
               </div>
 
               <div className="checkout-field">
-                <label>Confirmar senha</label>
+                <label htmlFor="checkout-confirm-password">Confirmar senha</label>
                 <input
+                  id="checkout-confirm-password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Repita a senha"
                   value={confirmPassword}
@@ -247,8 +252,9 @@ export default function CheckoutModal({
               </div>
 
               <div className="checkout-field">
-                <label>Vestibular alvo <span className="checkout-field-optional">(opcional)</span></label>
+                <label htmlFor="checkout-target-vestibular">Vestibular alvo <span className="checkout-field-optional">(opcional)</span></label>
                 <select
+                  id="checkout-target-vestibular"
                   value={targetVestibularId}
                   onChange={e => setTargetVestibularId(e.target.value ? Number(e.target.value) : '')}
                   className="checkout-select"

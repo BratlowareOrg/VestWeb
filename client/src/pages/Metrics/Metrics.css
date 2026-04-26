@@ -1,4 +1,4 @@
-.metrics-page {
+﻿.metrics-page {
   display: flex;
 }
 
@@ -25,8 +25,8 @@
 }
 
 .metrics-chart-card h2 {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
   color: var(--text);
   margin-bottom: 24px;
 }
@@ -79,7 +79,7 @@
   background: var(--sidebar-bg);
   color: white;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
   white-space: nowrap;
 }
@@ -87,7 +87,7 @@
 .bar-label {
   font-size: 11px;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -96,8 +96,8 @@
 }
 
 .bar-value {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
   color: var(--primary);
   position: absolute;
   top: -20px;
@@ -117,7 +117,7 @@
 }
 
 .session-row-label {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
   width: 60px;
   flex-shrink: 0;
@@ -138,8 +138,8 @@
 }
 
 .session-row-value {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
   color: var(--text);
   width: 36px;
   text-align: right;
@@ -156,8 +156,8 @@
 }
 
 .metrics-table-card h2 {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
   padding: 20px 24px;
   border-bottom: 1px solid var(--border);
 }
@@ -171,8 +171,8 @@
   background: var(--bg);
   padding: 10px 20px;
   text-align: left;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -181,7 +181,7 @@
 
 .metrics-table td {
   padding: 12px 20px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--text);
   border-bottom: 1px solid var(--border);
 }
@@ -200,18 +200,18 @@
   flex: 1;
   height: 8px;
   background: var(--bg);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .accuracy-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
-.accuracy-fill.high { background: #10b981; }
-.accuracy-fill.medium { background: #f59e0b; }
-.accuracy-fill.low { background: #ef4444; }
+.accuracy-fill.high { background: var(--color-success); }
+.accuracy-fill.medium { background: var(--color-warning); }
+.accuracy-fill.low { background: var(--color-error); }
 
 @media (max-width: 1200px) {
   .metrics-summary { grid-template-columns: repeat(2, 1fr); }

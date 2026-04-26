@@ -1,16 +1,29 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../store/store';
+import { fetchMe } from '../slices/authSlice';
+import FullPageLoader from './FullPageLoader';
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const token = useSelector((state: RootState) => state.auth.token);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, authChecked, checkingSession } = useSelector((state: RootState) => state.auth);
 
-  if (!token) {
+  useEffect(() => {
+    if (!authChecked && !checkingSession) {
+      dispatch(fetchMe());
+    }
+  }, [authChecked, checkingSession, dispatch]);
+
+  if (!authChecked || checkingSession) {
+    return <FullPageLoader message="Validando sessao..." />;
+  }
+
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 

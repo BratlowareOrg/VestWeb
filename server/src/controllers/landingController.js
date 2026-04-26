@@ -1,5 +1,6 @@
 import { Banner, Testimonial, InstitutionalVideo, Student } from '../db/models/index.js';
 import { sendContactEmail } from '../services/emailService.js';
+import { getRequestLogger } from '../services/logger.js';
 
 export const getBanners = async (req, res) => {
   try {
@@ -9,7 +10,7 @@ export const getBanners = async (req, res) => {
     });
     return res.json({ message: 'Banners fetched', data: banners });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -21,7 +22,7 @@ export const getTestimonials = async (req, res) => {
     });
     return res.json({ message: 'Testimonials fetched', data: testimonials });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -30,7 +31,7 @@ export const getInstitutionalVideo = async (req, res) => {
     const video = await InstitutionalVideo.findOne({ order: [['updated_at', 'DESC']] });
     return res.json({ message: 'Video fetched', data: video });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -42,7 +43,7 @@ export const getCollaborators = async (req, res) => {
     });
     return res.json({ message: 'Collaborators fetched', data: collaborators });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -55,7 +56,8 @@ export const submitContact = async (req, res) => {
     await sendContactEmail({ name, email, message });
     return res.json({ message: 'Mensagem recebida com sucesso! Entraremos em contato em breve.' });
   } catch (error) {
-    console.error('Erro ao enviar email de contato:', error.message);
-    return res.status(500).json({ message: 'Erro ao enviar mensagem', error: error.message });
+    getRequestLogger(req).error({ err: error, event: 'landing_submit_contact_error' }, 'Erro ao enviar email de contato');
+    return res.status(500).json({ message: 'Erro ao enviar mensagem' });
   }
 };
+

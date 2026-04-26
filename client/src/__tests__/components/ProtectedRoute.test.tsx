@@ -10,8 +10,18 @@ import videosReducer from '../../slices/videosSlice';
 import communityReducer from '../../slices/communitySlice';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const buildStore = (token: string | null) =>
+const makeUser = () => ({
+  id: 1,
+  name: 'Ana',
+  email: 'a@b.com',
+  enrollment: 'ANA001',
+  avatar_url: null,
+  role: 'student' as const,
+  type: 'student' as const,
+  created_at: '',
+});
+
+const buildStore = (isAuthenticated: boolean) =>
   configureStore({
     reducer: {
       auth: authReducer,
@@ -22,19 +32,19 @@ const buildStore = (token: string | null) =>
     },
     preloadedState: {
       auth: {
-        token,
-        student: token
-          ? { id: 1, name: 'Ana', email: 'a@b.com', enrollment: 'ANA001', avatar_url: null, role: 'student' as const, created_at: '' }
-          : null,
+        user: isAuthenticated ? makeUser() : null,
+        token: null,
         loading: false,
         error: null,
+        authChecked: true,
+        checkingSession: false,
       },
     },
   });
 
-const renderWithStore = (token: string | null) =>
+const renderWithStore = (isAuthenticated: boolean) =>
   render(
-    <Provider store={buildStore(token)}>
+    <Provider store={buildStore(isAuthenticated)}>
       <MemoryRouter initialEntries={['/dashboard']}>
         <Routes>
           <Route path="/login" element={<div>Login Page</div>} />
@@ -51,21 +61,15 @@ const renderWithStore = (token: string | null) =>
     </Provider>,
   );
 
-// ── Tests ──────────────────────────────────────────────────────────────────────
 describe('ProtectedRoute', () => {
-  it('should render children when the user is authenticated (token exists)', () => {
-    renderWithStore('valid_token');
+  it('renders children when the user is authenticated', () => {
+    renderWithStore(true);
     expect(screen.getByText('Protected Content')).toBeInTheDocument();
   });
 
-  it('should redirect to /login when there is no token', () => {
-    renderWithStore(null);
+  it('redirects to /login when user is not authenticated', () => {
+    renderWithStore(false);
     expect(screen.getByText('Login Page')).toBeInTheDocument();
     expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
-  });
-
-  it('should redirect to /login when token is an empty string', () => {
-    renderWithStore('');
-    expect(screen.getByText('Login Page')).toBeInTheDocument();
   });
 });

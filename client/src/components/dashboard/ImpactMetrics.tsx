@@ -154,7 +154,7 @@ const ImpactMetrics = ({ insights, activity, loading, insightsLoading, period, o
                   <li key={v.id} className="teacher-content-item">
                     <div className="teacher-content-thumb">
                       {v.thumbnail_url
-                        ? <img src={v.thumbnail_url} alt={v.title} />
+                        ? <img src={v.thumbnail_url} alt={v.title} width={48} height={27} loading="lazy" decoding="async" />
                         : <Video size={16} />
                       }
                     </div>

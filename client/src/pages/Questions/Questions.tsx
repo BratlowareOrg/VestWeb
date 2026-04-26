@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { ReactNode, memo, useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Filter, ChevronRight, RotateCcw, PenLine, Trash2 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
@@ -6,6 +6,194 @@ import { fetchQuestions, fetchSubjects, fetchVestibulares, Question, Alternative
 import { AppDispatch, RootState } from '../../store/store';
 import api from '../../api/api';
 import './Questions.css';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type HighlightRange = { start: number; end: number };
+
+// ─── Pure helpers (outside component — no closures over state) ────────────────
+
+function normalizeHighlightRanges(ranges: HighlightRange[], textLength: number): HighlightRange[] {
+  if (!ranges.length || textLength <= 0) return [];
+
+  const normalized = ranges
+    .map(r => ({
+      start: Math.max(0, Math.min(r.start, textLength)),
+      end: Math.max(0, Math.min(r.end, textLength)),
+    }))
+    .filter(r => r.end > r.start)
+    .sort((a, b) => a.start - b.start);
+
+  if (!normalized.length) return [];
+
+  const merged: HighlightRange[] = [{ ...normalized[0] }];
+  for (let i = 1; i < normalized.length; i++) {
+    const last = merged[merged.length - 1];
+    if (normalized[i].start <= last.end) {
+      last.end = Math.max(last.end, normalized[i].end);
+    } else {
+      merged.push({ ...normalized[i] });
+    }
+  }
+  return merged;
+}
+
+function getSelectionOffsets(container: HTMLElement, range: Range): HighlightRange | null {
+  try {
+    const startRange = range.cloneRange();
+    startRange.selectNodeContents(container);
+    startRange.setEnd(range.startContainer, range.startOffset);
+
+    const endRange = range.cloneRange();
+    endRange.selectNodeContents(container);
+    endRange.setEnd(range.endContainer, range.endOffset);
+
+    const start = startRange.toString().length;
+    const end = endRange.toString().length;
+
+    if (start === end) return null;
+    return { start: Math.min(start, end), end: Math.max(start, end) };
+  } catch {
+    return null;
+  }
+}
+
+function preprocessStatement(text: string): string {
+  text = text.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const words = text.split(' ');
+  for (let len = 3; len <= Math.min(12, Math.floor(words.length / 2)); len++) {
+    const firstPhrase = words.slice(0, len).join(' ');
+    const rest = words.slice(len).join(' ');
+    if (rest.startsWith(firstPhrase)) {
+      const nextChar = rest[firstPhrase.length];
+      if (!nextChar || /[,.\s;!?]/.test(nextChar)) {
+        text = rest;
+        break;
+      }
+    }
+  }
+
+  text = text.replace(
+    /(\.)(\s+)([A-ZÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕÇ]{2,},\s[A-Z]\.)/g,
+    '.\n\n$3'
+  );
+
+  return text.trim();
+}
+
+// ─── useHighlight hook ────────────────────────────────────────────────────────
+// Supports both mouse and touch selection with proper cleanup.
+
+function useHighlight(
+  enabled: boolean,
+  textLength: number,
+  onAdd: (range: HighlightRange) => void
+) {
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  const handleSelection = useCallback(() => {
+    if (!enabled || !ref.current || textLength === 0) return;
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+
+    const range = selection.getRangeAt(0);
+    const container = ref.current;
+    if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) return;
+
+    const offsets = getSelectionOffsets(container, range);
+    if (!offsets) return;
+
+    onAdd(offsets);
+    selection.removeAllRanges();
+  }, [enabled, textLength, onAdd]);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.addEventListener('mouseup', handleSelection);
+    el.addEventListener('touchend', handleSelection);
+    return () => {
+      el.removeEventListener('mouseup', handleSelection);
+      el.removeEventListener('touchend', handleSelection);
+    };
+  }, [handleSelection]);
+
+  return ref;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+type AlternativeItemProps = {
+  alt: Alternative;
+  isSelected: boolean;
+  answered: boolean;
+  onSelect: (alternativeId: number) => void;
+};
+
+const AlternativeItem = memo(function AlternativeItem({
+  alt,
+  isSelected,
+  answered,
+  onSelect,
+}: AlternativeItemProps) {
+  let cls = 'alternative-item';
+  if (isSelected) cls += ' selected';
+  if (answered) {
+    cls += ' disabled';
+    if (alt.is_correct) cls += ' correct';
+    else if (isSelected && !alt.is_correct) cls += ' incorrect';
+  }
+
+  return (
+    <div className={cls} onClick={() => onSelect(alt.id)}>
+      <div className="alternative-letter">{alt.letter}</div>
+      <div className="alternative-text">
+        {alt.text}
+        {alt.image_url && (
+          <img
+            src={alt.image_url}
+            alt={`Alternativa ${alt.letter}`}
+            className="alternative-image"
+            loading="lazy"
+            decoding="async"
+          />
+        )}
+      </div>
+    </div>
+  );
+});
+
+const QuestionSkeleton = () => (
+  <div className="question-container question-skeleton" aria-label="Carregando questão">
+    <div className="skeleton-bar skeleton-progress" />
+    <div className="skeleton-meta">
+      <div className="skeleton-tag" />
+      <div className="skeleton-tag skeleton-tag-wide" />
+      <div className="skeleton-tag" />
+    </div>
+    <div className="skeleton-toolbar">
+      <div className="skeleton-tag skeleton-tag-btn" />
+    </div>
+    <div className="skeleton-statement">
+      <div className="skeleton-line" />
+      <div className="skeleton-line" />
+      <div className="skeleton-line skeleton-line-medium" />
+      <div className="skeleton-line" />
+      <div className="skeleton-line skeleton-line-short" />
+    </div>
+    <div className="skeleton-alternatives">
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} className="skeleton-alternative" />
+      ))}
+    </div>
+    <div className="skeleton-actions">
+      <div className="skeleton-btn" />
+    </div>
+  </div>
+);
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 const Questions = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -20,30 +208,37 @@ const Questions = () => {
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [finished, setFinished] = useState(false);
   const [highlightMode, setHighlightMode] = useState(false);
-  const [highlights, setHighlights] = useState<{ start: number; end: number }[]>([]);
-  const statementRef = useRef<HTMLParagraphElement>(null);
+  const [highlights, setHighlights] = useState<HighlightRange[]>([]);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     dispatch(fetchSubjects());
     dispatch(fetchVestibulares());
   }, [dispatch]);
 
-  const handleSearch = async () => {
-    dispatch(fetchQuestions({ ...filters, limit: 200 }));
-    setCurrentIndex(0);
-    setSelectedAlt(null);
-    setAnswered(false);
-    setIsCorrect(null);
-    setFinished(false);
-    setScore({ correct: 0, total: 0 });
+  useEffect(() => {
+    const delay = isFirstRender.current ? 0 : 300;
+    isFirstRender.current = false;
 
-    try {
-      const res = await api.post('/questions/session');
-      setSessionId(res.data.data.id);
-    } catch {
-      setSessionId(null);
-    }
-  };
+    const timer = window.setTimeout(async () => {
+      dispatch(fetchQuestions({ ...filters, limit: 200 }));
+      setCurrentIndex(0);
+      setSelectedAlt(null);
+      setAnswered(false);
+      setIsCorrect(null);
+      setFinished(false);
+      setScore({ correct: 0, total: 0 });
+
+      try {
+        const res = await api.post('/questions/session');
+        setSessionId(res.data.data.id);
+      } catch {
+        setSessionId(null);
+      }
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [filters, dispatch]);
 
   const handleConfirm = async () => {
     if (selectedAlt === null) return;
@@ -86,90 +281,56 @@ const Questions = () => {
     setScore({ correct: 0, total: 0 });
   };
 
-  // Clear highlights when question changes
-  useEffect(() => { setHighlights([]); }, [currentIndex]);
-
-  const getTextOffset = (container: HTMLElement, node: Node, offset: number): number => {
-    let total = 0;
-    const walk = (n: Node): boolean => {
-      if (n === node) { total += offset; return true; }
-      if (n.nodeType === Node.TEXT_NODE) { total += n.textContent?.length ?? 0; }
-      else { for (const child of Array.from(n.childNodes)) { if (walk(child)) return true; } }
-      return false;
-    };
-    walk(container);
-    return total;
-  };
-
-  const mergeRanges = (ranges: { start: number; end: number }[]) => {
-    if (!ranges.length) return [];
-    const sorted = [...ranges].sort((a, b) => a.start - b.start);
-    const merged = [{ ...sorted[0] }];
-    for (let i = 1; i < sorted.length; i++) {
-      const last = merged[merged.length - 1];
-      if (sorted[i].start <= last.end) last.end = Math.max(last.end, sorted[i].end);
-      else merged.push({ ...sorted[i] });
-    }
-    return merged;
-  };
-
-  const handleMouseUp = () => {
-    if (!highlightMode || !statementRef.current) return;
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-    const range = sel.getRangeAt(0);
-    const container = statementRef.current;
-    if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) return;
-    const start = getTextOffset(container, range.startContainer, range.startOffset);
-    const end = getTextOffset(container, range.endContainer, range.endOffset);
-    if (start === end) return;
-    setHighlights(prev => mergeRanges([...prev, { start: Math.min(start, end), end: Math.max(start, end) }]));
-    sel.removeAllRanges();
-  };
-
-  const renderWithHighlights = (text: string) => {
-    if (!highlights.length) return text;
-    const parts: React.ReactNode[] = [];
+  const renderWithHighlights = (text: string, ranges: HighlightRange[]): ReactNode => {
+    if (!ranges.length) return text;
+    const parts: ReactNode[] = [];
     let pos = 0;
-    for (const { start, end } of highlights) {
+    ranges.forEach(({ start, end }, index) => {
       if (pos < start) parts.push(text.slice(pos, start));
-      parts.push(<mark key={start} className="question-highlight">{text.slice(start, end)}</mark>);
+      parts.push(
+        <mark key={`highlight-${index}-${start}-${end}`} className="question-highlight">
+          {text.slice(start, end)}
+        </mark>
+      );
       pos = end;
-    }
+    });
     if (pos < text.length) parts.push(text.slice(pos));
     return parts;
   };
 
-  const preprocessStatement = (text: string): string => {
-    // Remove \r\n do PDF e colapsa espaços extras
-    text = text.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
-
-    // Remove título duplicado no início (ex: "Título Título, continua...")
-    const words = text.split(' ');
-    for (let len = 3; len <= Math.min(12, Math.floor(words.length / 2)); len++) {
-      const firstPhrase = words.slice(0, len).join(' ');
-      const rest = words.slice(len).join(' ');
-      if (rest.startsWith(firstPhrase)) {
-        const nextChar = rest[firstPhrase.length];
-        if (!nextChar || /[,.\s;!?]/.test(nextChar)) {
-          text = rest;
-          break;
-        }
-      }
-    }
-
-    // Insere quebra de parágrafo antes de citações bibliográficas
-    // Padrão: SOBRENOME, I. ou SOBRENOME; após ponto final
-    text = text.replace(
-      /(\.)(\s+)([A-ZÁÉÍÓÚÂÊÎÔÛÃÕÀÈÌ]{2,},\s[A-Z]\.)/g,
-      '.\n\n$3'
-    );
-
-    return text.trim();
-  };
-
   const question: Question | undefined = questions[currentIndex];
-  const progress = questions.length > 0 ? ((currentIndex) / questions.length) * 100 : 0;
+
+  const processedStatement = useMemo(
+    () => (question ? preprocessStatement(question.statement) : ''),
+    [question?.id, question?.statement]
+  );
+
+  const sortedAlternatives = useMemo(
+    () => (question ? [...question.alternatives].sort((a, b) => a.letter.localeCompare(b.letter)) : []),
+    [question?.id, question?.alternatives]
+  );
+
+  const correctAlternativeLetter = useMemo(
+    () => question?.alternatives.find(a => a.is_correct)?.letter ?? '-',
+    [question?.id, question?.alternatives]
+  );
+
+  const handleSelectAlternative = useCallback((alternativeId: number) => {
+    if (answered) return;
+    setSelectedAlt(alternativeId);
+  }, [answered]);
+
+  const handleAddHighlight = useCallback((range: HighlightRange) => {
+    setHighlights(prev => normalizeHighlightRanges([...prev, range], processedStatement.length));
+  }, [processedStatement.length]);
+
+  const statementRef = useHighlight(highlightMode, processedStatement.length, handleAddHighlight);
+
+  useEffect(() => {
+    setHighlights([]);
+  }, [question?.id]);
+
+  const progress = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
 
   return (
     <div className="questions-page">
@@ -182,8 +343,9 @@ const Questions = () => {
             <h2><Filter size={16} /> Filtros</h2>
 
             <div className="form-group">
-              <label>Matéria</label>
+              <label htmlFor="question-filter-subject">Matéria</label>
               <select
+                id="question-filter-subject"
                 className="form-control"
                 value={filters.subject_id}
                 onChange={e => setFilters({ ...filters, subject_id: e.target.value })}
@@ -196,8 +358,9 @@ const Questions = () => {
             </div>
 
             <div className="form-group">
-              <label>Vestibular</label>
+              <label htmlFor="question-filter-vestibular">Vestibular</label>
               <select
+                id="question-filter-vestibular"
                 className="form-control"
                 value={filters.vestibular_id}
                 onChange={e => setFilters({ ...filters, vestibular_id: e.target.value })}
@@ -210,8 +373,9 @@ const Questions = () => {
             </div>
 
             <div className="form-group">
-              <label>Dificuldade</label>
+              <label htmlFor="question-filter-difficulty">Dificuldade</label>
               <select
+                id="question-filter-difficulty"
                 className="form-control"
                 value={filters.difficulty}
                 onChange={e => setFilters({ ...filters, difficulty: e.target.value })}
@@ -236,9 +400,9 @@ const Questions = () => {
               </label>
             </div>
 
-            <button className="filter-btn" onClick={handleSearch} disabled={loading}>
-              {loading ? 'Buscando...' : 'Buscar questões'}
-            </button>
+            {loading && (
+              <p className="filter-searching" aria-live="polite">Buscando...</p>
+            )}
             {Object.values(filters).some(v => v !== '') && (
               <button
                 className="filter-clear-btn"
@@ -249,18 +413,15 @@ const Questions = () => {
             )}
           </div>
 
-          <div>
+          <div aria-busy={loading}>
             {loading ? (
-              <div className="questions-loading">
-                <div className="questions-spinner" />
-                <p>Carregando questões...</p>
-              </div>
+              <QuestionSkeleton />
             ) : finished ? (
               <div className="question-container">
                 <div className="question-result">
                   <span className="result-score">{Math.round((score.correct / score.total) * 100)}%</span>
                   <h2>Resultado final</h2>
-                  <p>{score.correct} de {score.total} questoes corretas</p>
+                  <p>{score.correct} de {score.total} questões corretas</p>
                   <button className="btn-primary" onClick={handleRestart} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 auto' }}>
                     <RotateCcw size={16} />
                     Tentar novamente
@@ -270,8 +431,8 @@ const Questions = () => {
             ) : questions.length === 0 ? (
               <div className="questions-empty">
                 <Filter size={48} />
-                <h3>Nenhuma questao carregada</h3>
-                <p>Use os filtros ao lado para buscar questoes e comecar a praticar.</p>
+                <h3>Nenhuma questão carregada</h3>
+                <p>Use os filtros ao lado para buscar questões e começar a praticar.</p>
               </div>
             ) : question ? (
               <div className="question-container">
@@ -298,14 +459,19 @@ const Questions = () => {
                   <button
                     className={`highlight-toggle${highlightMode ? ' active' : ''}`}
                     onClick={() => setHighlightMode(m => !m)}
-                    title="Grifar enunciado"
+                    aria-pressed={highlightMode}
+                    aria-label={highlightMode ? 'Desativar modo de grifar' : 'Ativar modo de grifar'}
                   >
-                    <PenLine size={14} />
+                    <PenLine size={14} aria-hidden="true" />
                     Grifar
                   </button>
                   {highlights.length > 0 && (
-                    <button className="highlight-clear" onClick={() => setHighlights([])} title="Limpar grifos">
-                      <Trash2 size={14} />
+                    <button
+                      className="highlight-clear"
+                      onClick={() => setHighlights([])}
+                      aria-label="Limpar grifos"
+                    >
+                      <Trash2 size={14} aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -313,14 +479,20 @@ const Questions = () => {
                 <p
                   ref={statementRef}
                   className={`question-statement${highlightMode ? ' highlight-active' : ''}`}
-                  onMouseUp={handleMouseUp}
                 >
-                  {renderWithHighlights(preprocessStatement(question.statement))}
+                  {renderWithHighlights(processedStatement, highlights)}
                 </p>
 
                 {question.image_url && (
                   <div style={{ marginBottom: '16px' }}>
-                    <img src={question.image_url} alt="Imagem da questão" className="question-image" style={{ marginBottom: '4px' }} />
+                    <img
+                      src={question.image_url}
+                      alt="Imagem da questão"
+                      className="question-image"
+                      style={{ marginBottom: '4px' }}
+                      loading="lazy"
+                      decoding="async"
+                    />
                     <p style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center', margin: 0 }}>
                       [{question.year} — {question.image_url.split('/').pop()}]
                     </p>
@@ -328,37 +500,24 @@ const Questions = () => {
                 )}
 
                 {answered && (
-                  <div className={`question-feedback ${isCorrect ? 'correct' : 'incorrect'}`}>
+                  <div className={`question-feedback ${isCorrect ? 'correct' : 'incorrect'}`} role="alert">
                     <strong>{isCorrect ? '✓ Resposta correta!' : '✗ Resposta incorreta!'}</strong>
                     {!isCorrect && (
-                      <span>A resposta correta era: {question.alternatives.find(a => a.is_correct)?.letter}</span>
+                      <span>A resposta correta era: {correctAlternativeLetter}</span>
                     )}
                   </div>
                 )}
 
                 <div className="alternatives-list">
-                  {[...question.alternatives].sort((a, b) => a.letter.localeCompare(b.letter)).map((alt: Alternative) => {
-                    let cls = 'alternative-item';
-                    if (alt.id === selectedAlt) cls += ' selected';
-                    if (answered) {
-                      cls += ' disabled';
-                      if (alt.is_correct) cls += ' correct';
-                      else if (alt.id === selectedAlt && !alt.is_correct) cls += ' incorrect';
-                    }
-                    return (
-                      <div
-                        key={alt.id}
-                        className={cls}
-                        onClick={() => !answered && setSelectedAlt(alt.id)}
-                      >
-                        <div className="alternative-letter">{alt.letter}</div>
-                        <div className="alternative-text">
-                          {alt.text}
-                          {alt.image_url && <img src={alt.image_url} alt={`Alternativa ${alt.letter}`} className="alternative-image" />}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {sortedAlternatives.map((alt: Alternative) => (
+                    <AlternativeItem
+                      key={alt.id}
+                      alt={alt}
+                      isSelected={alt.id === selectedAlt}
+                      answered={answered}
+                      onSelect={handleSelectAlternative}
+                    />
+                  ))}
                 </div>
 
                 <div className="question-actions">
@@ -372,7 +531,7 @@ const Questions = () => {
                     </button>
                   ) : (
                     <button className="btn-primary" onClick={handleNext} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {currentIndex + 1 >= questions.length ? 'Ver resultado' : 'Proxima questao'}
+                      {currentIndex + 1 >= questions.length ? 'Ver resultado' : 'Próxima questão'}
                       <ChevronRight size={16} />
                     </button>
                   )}

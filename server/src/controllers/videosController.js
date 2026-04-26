@@ -18,7 +18,7 @@ export const getAll = async (req, res) => {
     });
     return res.json({ message: 'Videos fetched', data: videos });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -44,7 +44,7 @@ export const getById = async (req, res) => {
 
     return res.json({ message: 'Video fetched', data: { ...video.toJSON(), progress, isFavorite: !!favorite } });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -61,7 +61,7 @@ export const create = async (req, res) => {
     });
     return res.status(201).json({ message: 'Video created', data: video });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -80,7 +80,7 @@ export const update = async (req, res) => {
     await video.update({ title, description, youtube_url, thumbnail_url, topic_id, published_at });
     return res.json({ message: 'Video updated', data: video });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -98,7 +98,7 @@ export const destroy = async (req, res) => {
     await video.destroy();
     return res.json({ message: 'Video deleted' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -113,7 +113,7 @@ export const getMyVideos = async (req, res) => {
     });
     return res.json({ message: 'Videos fetched', data: videos });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -131,7 +131,7 @@ export const updateProgress = async (req, res) => {
 
     return res.json({ message: 'Progress updated', data: progress });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -150,7 +150,7 @@ export const toggleFavorite = async (req, res) => {
       return res.json({ message: 'Added to favorites', data: { isFavorite: true } });
     }
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -167,6 +167,6 @@ export const getFavorites = async (req, res) => {
     });
     return res.json({ message: 'Favorites fetched', data: favorites });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

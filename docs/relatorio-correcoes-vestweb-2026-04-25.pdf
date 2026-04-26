@@ -1,0 +1,210 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 2840 >>
+stream
+BT
+/F1 10 Tf
+14 TL
+50 800 Td
+(RELATORIO TECNICO DE CORRECOES - VESTWEB) Tj
+T*
+(----------------------------------------) Tj
+T*
+(Documento de fechamento das melhorias implementadas a partir da auditoria backend.) Tj
+T*
+(Data de emissao: 25/04/2026) Tj
+T*
+(Escopo: codigo atual da branch de trabalho.) Tj
+T*
+() Tj
+T*
+(Resumo executivo:) Tj
+T*
+(- Itens mapeados da auditoria: 18) Tj
+T*
+(- Itens concluidos: 17) Tj
+T*
+(- Itens parcialmente concluidos: 1 \(item 18 - cobertura de testes\)) Tj
+T*
+(- Itens pendentes sem implementacao: 0) Tj
+T*
+() Tj
+T*
+(STATUS POR ITEM DA AUDITORIA) Tj
+T*
+(----------------------------) Tj
+T*
+(1\) Credenciais reais expostas no repositorio - CONCLUIDO) Tj
+T*
+(   Evidencias: .gitignore, server/.env.example, client/.env.example.) Tj
+T*
+(2\) Stripe Secret Key no frontend - CONCLUIDO) Tj
+T*
+(   Evidencias: client/.env.example usa apenas VITE_STRIPE_PUBLISHABLE_KEY.) Tj
+T*
+(3\) Logout nao invalida token no servidor - CONCLUIDO) Tj
+T*
+(   Evidencias: server/src/controllers/authController.js \(logout destroi sessao\).) Tj
+T*
+(4\) JWT em localStorage \(risco XSS\) - CONCLUIDO) Tj
+T*
+(   Evidencias: client/src/api/api.ts com withCredentials e limpeza de token legado;) Tj
+T*
+(   auth usa cookie HTTP-only no backend.) Tj
+T*
+(5\) Sem rate limiting \(login/pagamento\) - CONCLUIDO) Tj
+T*
+(   Evidencias: server/src/middlewares/rateLimitMiddleware.js;) Tj
+T*
+(   server/src/routes/authRoutes.js; server/src/routes/paymentRoutes.js.) Tj
+T*
+(6\) Sem headers de seguranca HTTP - CONCLUIDO) Tj
+T*
+(   Evidencias: helmet aplicado em server/app.js.) Tj
+T*
+(7\) CORS hardcoded para localhost - CONCLUIDO) Tj
+T*
+(   Evidencias: CORS_ALLOWED_ORIGINS/CLIENT_URL via env em server/app.js.) Tj
+T*
+(8\) error.message exposto ao cliente - CONCLUIDO) Tj
+T*
+(   Evidencias: handler global retorna mensagem generica para erros 5xx.) Tj
+T*
+(9\) Sem validacao de schema na API - CONCLUIDO) Tj
+T*
+(   Evidencias: schemaValidationMiddleware + validators \(auth/payment/questions\).) Tj
+T*
+() Tj
+T*
+(STATUS POR ITEM DA AUDITORIA \(CONT.\)) Tj
+T*
+(------------------------------------) Tj
+T*
+(10\) Sem logging estruturado - CONCLUIDO) Tj
+T*
+(    Evidencias: server/src/services/logger.js \(pino\) e requestLoggerMiddleware.) Tj
+T*
+(11\) Banco usando usuario admin \(postgres\) - CONCLUIDO) Tj
+T*
+(    Evidencias: DB_RUNTIME_* em server/src/db/index.js +) Tj
+T*
+(    script server/scripts/provision-runtime-db-user.js.) Tj
+T*
+(12\) Sem sanitizacao na comunidade - CONCLUIDO) Tj
+T*
+(    Evidencias: DOMPurify no server/src/controllers/communityController.js.) Tj
+T*
+(13\) Ausencia de health check endpoint - CONCLUIDO) Tj
+T*
+(    Evidencias: GET /health em server/app.js \(status + database\).) Tj
+T*
+(14\) JWT secret fraco - CONCLUIDO) Tj
+T*
+(    Evidencias: validacao de tamanho/entropia em jwtService.js.) Tj
+T*
+T*
+(Pagina 1 de 2) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 1660 >>
+stream
+BT
+/F1 10 Tf
+14 TL
+50 800 Td
+(15\) Pool PostgreSQL sub-dimensionado - CONCLUIDO) Tj
+T*
+(    Evidencias: DB_POOL_MAX/MIN/ACQUIRE/IDLE em server/src/db/index.js.) Tj
+T*
+(16\) Sem Docker para deploy consistente - CONCLUIDO) Tj
+T*
+(    Evidencias: server/Dockerfile e server/.dockerignore.) Tj
+T*
+(17\) Sem versionamento de API - CONCLUIDO) Tj
+T*
+(    Evidencias: server/app.js com /api/v1 e client/src/api/api.ts com /api/v1.) Tj
+T*
+(18\) Cobertura de testes incompleta - PARCIALMENTE CONCLUIDO) Tj
+T*
+(    Evidencias: novos testes unitarios para webhook/limites/rotas.) Tj
+T*
+(    Observacao: testes de integracao e frontend ainda apresentam falhas pre-existentes.) Tj
+T*
+() Tj
+T*
+(RESULTADOS DE VALIDACAO) Tj
+T*
+(-----------------------) Tj
+T*
+(Comandos executados:) Tj
+T*
+(- Backend unitario: npm run test -- tests/unit --runInBand) Tj
+T*
+(  Resultado: APROVADO \(17 suites, 125 testes\).) Tj
+T*
+(- Backend integracao: npm run test -- tests/integration --runInBand) Tj
+T*
+(  Resultado: FALHOU \(auth.test.js: export Teacher ausente em ../db/models/index.js\).) Tj
+T*
+(- Frontend testes: npm run test) Tj
+T*
+(  Resultado: FALHOU \(LoginPage.test.tsx com seletor ambiguo /senha/i\).) Tj
+T*
+(- Frontend build: npm run build) Tj
+T*
+(  Resultado: FALHOU \(erros TypeScript pre-existentes em testes/paginas\).) Tj
+T*
+() Tj
+T*
+(Conclusao tecnica:) Tj
+T*
+(As correcoes de seguranca, resiliencia e padronizacao da API foram aplicadas no backend.) Tj
+T*
+(A estabilizacao total da esteira \(integration/frontend\) depende de um ciclo adicional) Tj
+T*
+(de correcoes de testes e tipagem no client.) Tj
+T*
+() Tj
+T*
+(Fim do relatorio.) Tj
+T*
+() Tj
+T*
+T*
+(Pagina 2 de 2) Tj
+ET
+endstream
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000197 00000 n 
+0000000323 00000 n 
+0000003215 00000 n 
+0000003341 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+5053
+%%EOF

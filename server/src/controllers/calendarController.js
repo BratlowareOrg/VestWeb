@@ -20,7 +20,7 @@ export const getEvents = async (req, res) => {
 
     return res.json({ message: 'Events fetched', data: events });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -41,7 +41,7 @@ export const createEvent = async (req, res) => {
 
     return res.status(201).json({ message: 'Event created', data: event });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -55,7 +55,7 @@ export const updateEvent = async (req, res) => {
     await event.update(req.body);
     return res.json({ message: 'Event updated', data: event });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -69,7 +69,7 @@ export const deleteEvent = async (req, res) => {
     await event.destroy();
     return res.json({ message: 'Event deleted' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -83,6 +83,6 @@ export const toggleDone = async (req, res) => {
     await event.update({ done: !event.done });
     return res.json({ message: 'Event toggled', data: event });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

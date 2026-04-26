@@ -230,8 +230,9 @@ const TeacherQuestions = () => {
               <h2>Nova questão</h2>
 
               <div className="tqf-group">
-                <label>Enunciado *</label>
+                <label htmlFor="new-question-statement">Enunciado *</label>
                 <textarea
+                  id="new-question-statement"
                   rows={4}
                   required
                   value={newForm.statement}
@@ -241,8 +242,9 @@ const TeacherQuestions = () => {
               </div>
 
               <div className="tqf-group">
-                <label>Imagem do enunciado (URL)</label>
+                <label htmlFor="new-question-image-url">Imagem do enunciado (URL)</label>
                 <input
+                  id="new-question-image-url"
                   type="text"
                   value={newForm.image_url}
                   onChange={e => setNewForm(p => ({ ...p, image_url: e.target.value }))}
@@ -255,8 +257,9 @@ const TeacherQuestions = () => {
 
               <div className="tqf-row">
                 <div className="tqf-group">
-                  <label>Matéria *</label>
+                  <label htmlFor="new-question-subject">Mat?ria *</label>
                   <select
+                    id="new-question-subject"
                     required
                     value={newForm.subject_id}
                     onChange={e => setNewForm(p => ({ ...p, subject_id: e.target.value, topic_id: '' }))}
@@ -267,8 +270,9 @@ const TeacherQuestions = () => {
                 </div>
 
                 <div className="tqf-group">
-                  <label>Tópico *</label>
+                  <label htmlFor="new-question-topic">T?pico *</label>
                   <select
+                    id="new-question-topic"
                     required
                     value={newForm.topic_id}
                     onChange={e => setNewForm(p => ({ ...p, topic_id: e.target.value }))}
@@ -281,8 +285,9 @@ const TeacherQuestions = () => {
                 </div>
 
                 <div className="tqf-group">
-                  <label>Dificuldade *</label>
-                  <select value={newForm.difficulty} onChange={e => setNewForm(p => ({ ...p, difficulty: e.target.value }))}>
+                  <label htmlFor="new-question-difficulty">Dificuldade *</label>
+                  <select
+                    id="new-question-difficulty" value={newForm.difficulty} onChange={e => setNewForm(p => ({ ...p, difficulty: e.target.value }))}>
                     <option value="easy">Fácil</option>
                     <option value="medium">Médio</option>
                     <option value="hard">Difícil</option>
@@ -290,23 +295,24 @@ const TeacherQuestions = () => {
                 </div>
 
                 <div className="tqf-group">
-                  <label>Fonte</label>
-                  <input type="text" value={newForm.source} onChange={e => setNewForm(p => ({ ...p, source: e.target.value }))} placeholder="Ex: ENEM" />
+                  <label htmlFor="new-question-source">Fonte</label>
+                  <input id="new-question-source" type="text" value={newForm.source} onChange={e => setNewForm(p => ({ ...p, source: e.target.value }))} placeholder="Ex: ENEM" />
                 </div>
 
                 <div className="tqf-group">
-                  <label>Ano</label>
-                  <input type="number" value={newForm.year} onChange={e => setNewForm(p => ({ ...p, year: e.target.value }))} placeholder="Ex: 2023" />
+                  <label htmlFor="new-question-year">Ano</label>
+                  <input id="new-question-year" type="number" value={newForm.year} onChange={e => setNewForm(p => ({ ...p, year: e.target.value }))} placeholder="Ex: 2023" />
                 </div>
               </div>
 
               <div className="tqf-group">
-                <label>Alternativas (marque a correta) *</label>
+                <label htmlFor="new-question-correct-0">Alternativas (marque a correta) *</label>
                 <div className="tqf-alternatives">
                   {newForm.alternatives.map((alt, i) => (
                     <div key={i} className="tqf-alt">
                       <span className="tqf-alt-letter">{String.fromCharCode(65 + i)}</span>
                       <input
+                        id={`new-question-correct-${i}`}
                         type="radio"
                         name="correct"
                         checked={alt.is_correct}
@@ -534,8 +540,9 @@ const TeacherQuestions = () => {
                               <td colSpan={10}>
                                 <div className="tqe-alt-imgs">
                                   <div className="tqf-group" style={{ marginBottom: '8px' }}>
-                                    <label>Tópico</label>
+                                    <label htmlFor="edit-question-topic">T?pico</label>
                                     <select
+                                      id="edit-question-topic"
                                       className="tqe-input"
                                       value={editingRow.topic_id}
                                       onChange={e => setEditingRow(r => r && { ...r, topic_id: e.target.value })}

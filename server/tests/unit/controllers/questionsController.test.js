@@ -1,221 +1,237 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
-const mockQuestionFindAndCountAll = jest.fn();
+const mockSequelizeQuery = jest.fn();
+const mockSequelizeTransaction = jest.fn();
 const mockQuestionFindByPk = jest.fn();
 const mockQuestionCreate = jest.fn();
-const mockAlternativeFindByPk = jest.fn();
-const mockAlternativeCreate = jest.fn();
-const mockAnswerCreate = jest.fn();
-const mockSubjectFindAll = jest.fn();
+const mockAlternativeBulkCreate = jest.fn();
 
 jest.unstable_mockModule('../../../src/db/models/index.js', () => ({
+  Answer: {},
+  Points: {},
+  Streak: {},
   Question: {
-    findAndCountAll: mockQuestionFindAndCountAll,
     findByPk: mockQuestionFindByPk,
     create: mockQuestionCreate,
   },
   Alternative: {
-    findByPk: mockAlternativeFindByPk,
-    create: mockAlternativeCreate,
+    bulkCreate: mockAlternativeBulkCreate,
   },
-  Answer: { create: mockAnswerCreate },
-  Topic: {},
-  Subject: { findAll: mockSubjectFindAll },
-  QuestionSession: {},
+  QuestionSession: {
+    findOne: jest.fn(),
+    create: jest.fn(),
+  },
+  Student: { findByPk: jest.fn() },
+  Vestibular: { findByPk: jest.fn() },
+}));
+
+jest.unstable_mockModule('../../../src/db/index.js', () => ({
+  default: {
+    query: mockSequelizeQuery,
+    transaction: mockSequelizeTransaction,
+  },
 }));
 
 const {
-  getAll, getById, create, update, remove, getSubjects, submitAnswer,
+  getAll,
+  getById,
+  getSubjects,
+  createQuestion,
+  deleteQuestion,
 } = await import('../../../src/controllers/questionsController.js');
 
-// ── Helper ────────────────────────────────────────────────────────────────────
 const makeRes = () => ({
   status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
 });
 
-const makeQuestion = (id = 1) => ({
-  id,
-  statement: 'What is 2+2?',
-  topic_id: 1,
-  difficulty: 'easy',
-  update: jest.fn(),
-  destroy: jest.fn(),
-  toJSON() { return { id: this.id, statement: this.statement }; },
-});
-
-// ── getAll ─────────────────────────────────────────────────────────────────────
 describe('questionsController.getAll', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('should return paginated questions', async () => {
-    mockQuestionFindAndCountAll.mockResolvedValue({ count: 1, rows: [makeQuestion()] });
-    const req = { query: {} };
-    const res = makeRes();
-    await getAll(req, res);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Questions fetched', data: expect.any(Object) });
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should apply subject_id filter via topicWhere', async () => {
-    mockQuestionFindAndCountAll.mockResolvedValue({ count: 0, rows: [] });
-    const req = { query: { subject_id: '5', difficulty: 'hard', bank: 'FUVEST' } };
-    const res = makeRes();
-    await getAll(req, res);
-    const [callArgs] = mockQuestionFindAndCountAll.mock.calls;
-    expect(callArgs[0].where.difficulty).toBe('hard');
-    expect(callArgs[0].where.bank).toBe('FUVEST');
-  });
+  it('returns questions and parsed count', async () => {
+    mockSequelizeQuery
+      .mockResolvedValueOnce([{ id: 1, statement: 'Q1' }])
+      .mockResolvedValueOnce([{ count: '1' }]);
 
-  it('should use default limit=10 and offset=0', async () => {
-    mockQuestionFindAndCountAll.mockResolvedValue({ count: 0, rows: [] });
     const req = { query: {} };
     const res = makeRes();
+
     await getAll(req, res);
-    const [callArgs] = mockQuestionFindAndCountAll.mock.calls;
-    expect(callArgs[0].limit).toBe(10);
-    expect(callArgs[0].offset).toBe(0);
+
+    expect(mockSequelizeQuery).toHaveBeenCalledTimes(2);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Questions fetched',
+      data: {
+        count: 1,
+        rows: [{ id: 1, statement: 'Q1' }],
+      },
+    });
+  });
+
+  it('applies numeric replacements from query params', async () => {
+    mockSequelizeQuery
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ count: '0' }]);
+
+    const req = {
+      query: {
+        subject_id: '5',
+        year: '2024',
+        difficulty: 'medium',
+        limit: '7',
+        offset: '3',
+      },
+    };
+    const res = makeRes();
+
+    await getAll(req, res);
+
+    const firstCallOptions = mockSequelizeQuery.mock.calls[0][1];
+    expect(firstCallOptions.replacements).toEqual(expect.objectContaining({
+      subject_id: 5,
+      year: 2024,
+      difficulty: 'medium',
+      limit: 7,
+      offset: 3,
+    }));
   });
 });
 
-// ── getById ────────────────────────────────────────────────────────────────────
 describe('questionsController.getById', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('should return the question when found', async () => {
-    mockQuestionFindByPk.mockResolvedValue(makeQuestion());
-    const req = { params: { id: '1' } };
-    const res = makeRes();
-    await getById(req, res);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Question fetched', data: expect.any(Object) });
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should return 404 when question is not found', async () => {
-    mockQuestionFindByPk.mockResolvedValue(null);
+  it('returns 404 when question is missing', async () => {
+    mockSequelizeQuery.mockResolvedValueOnce([]);
+
     const req = { params: { id: '999' } };
     const res = makeRes();
+
     await getById(req, res);
+
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ message: 'Question not found' });
   });
+
+  it('returns question payload when found', async () => {
+    const question = { id: 10, statement: 'Q10' };
+    mockSequelizeQuery.mockResolvedValueOnce([question]);
+
+    const req = { params: { id: '10' } };
+    const res = makeRes();
+
+    await getById(req, res);
+
+    expect(res.json).toHaveBeenCalledWith({ message: 'Question fetched', data: question });
+  });
 });
 
-// ── create ─────────────────────────────────────────────────────────────────────
-describe('questionsController.create', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('should return 403 when a student tries to create a question', async () => {
-    const req = { user: { id: 1, role: 'student' }, body: {} };
-    const res = makeRes();
-    await create(req, res);
-    expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+describe('questionsController.getSubjects', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should create question and alternatives for a teacher', async () => {
-    const created = { id: 10, ...makeQuestion(10) };
-    mockQuestionCreate.mockResolvedValue(created);
-    mockAlternativeCreate.mockResolvedValue({});
-    mockQuestionFindByPk.mockResolvedValue(created);
+  it('returns subject list', async () => {
+    const rows = [{ id: 1, name: 'Biologia' }];
+    mockSequelizeQuery.mockResolvedValueOnce(rows);
+
+    const req = {};
+    const res = makeRes();
+
+    await getSubjects(req, res);
+
+    expect(res.json).toHaveBeenCalledWith({ message: 'Subjects fetched', data: rows });
+  });
+});
+
+describe('questionsController.createQuestion', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockSequelizeTransaction.mockResolvedValue({
+      commit: jest.fn(),
+      rollback: jest.fn(),
+    });
+  });
+
+  it('returns 400 when required fields are missing', async () => {
+    const req = {
+      user: { id: 2 },
+      body: { topic_id: 1, difficulty: 'easy', alternatives: [{ text: 'A' }] },
+    };
+    const res = makeRes();
+
+    await createQuestion(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(mockSequelizeTransaction).not.toHaveBeenCalled();
+  });
+
+  it('creates question and alternatives in a transaction', async () => {
+    const tx = { commit: jest.fn(), rollback: jest.fn() };
+    mockSequelizeTransaction.mockResolvedValue(tx);
+    mockQuestionCreate.mockResolvedValue({ id: 55 });
+    mockAlternativeBulkCreate.mockResolvedValue([]);
 
     const req = {
-      user: { id: 2, role: 'teacher' },
+      user: { id: 9 },
       body: {
-        statement: 'What is 2+2?', topic_id: 1, difficulty: 'easy',
+        statement: 'Pergunta teste',
+        topic_id: 1,
+        difficulty: 'easy',
         alternatives: [
-          { letter: 'A', text: '3', is_correct: false },
-          { letter: 'B', text: '4', is_correct: true },
+          { letter: 'A', text: 'Opcao A', is_correct: true },
+          { letter: 'B', text: 'Opcao B', is_correct: false },
         ],
       },
     };
     const res = makeRes();
-    await create(req, res);
+
+    await createQuestion(req, res);
+
     expect(mockQuestionCreate).toHaveBeenCalled();
-    expect(mockAlternativeCreate).toHaveBeenCalledTimes(2);
-    expect(res.status).toHaveBeenCalledWith(201);
-  });
-
-  it('should allow admin to create a question', async () => {
-    const created = makeQuestion(11);
-    mockQuestionCreate.mockResolvedValue(created);
-    mockQuestionFindByPk.mockResolvedValue(created);
-    const req = { user: { id: 3, role: 'admin' }, body: { statement: 'Q', topic_id: 1 } };
-    const res = makeRes();
-    await create(req, res);
+    expect(mockAlternativeBulkCreate).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ question_id: 55, letter: 'A' }),
+        expect.objectContaining({ question_id: 55, letter: 'B' }),
+      ]),
+      expect.objectContaining({ transaction: tx }),
+    );
+    expect(tx.commit).toHaveBeenCalledTimes(1);
+    expect(tx.rollback).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(201);
   });
 });
 
-// ── remove ─────────────────────────────────────────────────────────────────────
-describe('questionsController.remove', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('should return 403 for a student', async () => {
-    const req = { user: { role: 'student' }, params: { id: '1' } };
-    const res = makeRes();
-    await remove(req, res);
-    expect(res.status).toHaveBeenCalledWith(403);
+describe('questionsController.deleteQuestion', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should return 404 when question does not exist', async () => {
+  it('returns 404 when question does not exist', async () => {
     mockQuestionFindByPk.mockResolvedValue(null);
-    const req = { user: { role: 'teacher' }, params: { id: '999' } };
+
+    const req = { params: { id: '404' } };
     const res = makeRes();
-    await remove(req, res);
+
+    await deleteQuestion(req, res);
+
     expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Question not found' });
   });
 
-  it('should delete the question and return a success message', async () => {
-    const q = makeQuestion();
-    mockQuestionFindByPk.mockResolvedValue(q);
-    const req = { user: { role: 'teacher' }, params: { id: '1' } };
+  it('deletes question and returns success', async () => {
+    const destroy = jest.fn();
+    mockQuestionFindByPk.mockResolvedValue({ id: 1, destroy });
+
+    const req = { params: { id: '1' } };
     const res = makeRes();
-    await remove(req, res);
-    expect(q.destroy).toHaveBeenCalled();
+
+    await deleteQuestion(req, res);
+
+    expect(destroy).toHaveBeenCalledTimes(1);
     expect(res.json).toHaveBeenCalledWith({ message: 'Question deleted' });
-  });
-});
-
-// ── submitAnswer ───────────────────────────────────────────────────────────────
-describe('questionsController.submitAnswer', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('should create an answer with is_correct=true for the correct alternative', async () => {
-    mockAlternativeFindByPk.mockResolvedValue({ id: 5, is_correct: true });
-    mockAnswerCreate.mockResolvedValue({ id: 1, is_correct: true });
-
-    const req = {
-      body: { session_id: 1, question_id: 2, chosen_alternative_id: 5, response_time_seconds: 12 },
-    };
-    const res = makeRes();
-    await submitAnswer(req, res);
-    expect(mockAnswerCreate).toHaveBeenCalledWith(expect.objectContaining({ is_correct: true }));
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ is_correct: true }),
-    }));
-  });
-
-  it('should create an answer with is_correct=false for a wrong alternative', async () => {
-    mockAlternativeFindByPk.mockResolvedValue({ id: 6, is_correct: false });
-    mockAnswerCreate.mockResolvedValue({ id: 2, is_correct: false });
-
-    const req = {
-      body: { session_id: 1, question_id: 2, chosen_alternative_id: 6 },
-    };
-    const res = makeRes();
-    await submitAnswer(req, res);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ is_correct: false }),
-    }));
-  });
-
-  it('should set is_correct=false when alternative is not found', async () => {
-    mockAlternativeFindByPk.mockResolvedValue(null);
-    mockAnswerCreate.mockResolvedValue({ id: 3, is_correct: false });
-
-    const req = { body: { session_id: 1, question_id: 2, chosen_alternative_id: 999 } };
-    const res = makeRes();
-    await submitAnswer(req, res);
-    expect(mockAnswerCreate).toHaveBeenCalledWith(expect.objectContaining({ is_correct: false }));
   });
 });

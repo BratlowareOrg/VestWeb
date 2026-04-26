@@ -12,7 +12,7 @@ export const getMyPoints = async (req, res) => {
     const total_points = result[0]?.total_points || 0;
     return res.json({ message: 'Points fetched', data: { total_points } });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -25,7 +25,7 @@ export const getMyBadges = async (req, res) => {
     });
     return res.json({ message: 'Badges fetched', data: badges });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -34,7 +34,7 @@ export const getMyStreak = async (req, res) => {
     const streak = await Streak.findOne({ where: { student_id: req.user.id } });
     return res.json({ message: 'Streak fetched', data: streak || { current_streak: 0, longest_streak: 0, last_activity_date: null } });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -59,7 +59,7 @@ export const getMyStats = async (req, res) => {
     const accuracy = total_answered > 0 ? Math.round((correct / total_answered) * 100) : 0;
     return res.json({ message: 'Stats fetched', data: { total_answered, accuracy } });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -87,7 +87,7 @@ export const getSubjectStats = async (req, res) => {
     }));
     return res.json({ message: 'Subject stats fetched', data: subjects });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -109,7 +109,7 @@ export const getRecentSessions = async (req, res) => {
     });
     return res.json({ message: 'Recent sessions fetched', data: result });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -124,6 +124,6 @@ export const getLeaderboard = async (req, res) => {
     });
     return res.json({ message: 'Leaderboard fetched', data: leaderboard });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

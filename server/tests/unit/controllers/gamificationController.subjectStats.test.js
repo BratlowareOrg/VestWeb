@@ -87,7 +87,6 @@ describe('gamificationController.getSubjectStats', () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       message: 'Internal server error',
-      error: 'db down',
     });
   });
 });
