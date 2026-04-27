@@ -17,6 +17,7 @@ const TeacherSessions = lazy(() => import('./pages/TeacherArea/TeacherSessions')
 const TeacherQuestions = lazy(() => import('./pages/TeacherArea/TeacherQuestions'));
 const TeacherVestWebFlix = lazy(() => import('./pages/TeacherArea/TeacherSinaflix'));
 const TeacherSettings = lazy(() => import('./pages/TeacherArea/TeacherSettings'));
+const AdminPage = lazy(() => import('./pages/AdminArea/AdminPage'));
 const SelectPlatform = lazy(() => import('./pages/SelectPlatform/SelectPlatform'));
 const VestWebFlix = lazy(() => import('./pages/Sinaflix/Sinaflix'));
 const Home = lazy(() => import('./pages/Home/Home'));
@@ -202,6 +203,14 @@ function App() {
             element={(
               <TeacherRoute>
                 <TeacherSettings />
+              </TeacherRoute>
+            )}
+          />
+          <Route
+            path="/admin"
+            element={(
+              <TeacherRoute>
+                <AdminPage />
               </TeacherRoute>
             )}
           />

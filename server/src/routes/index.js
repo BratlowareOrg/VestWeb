@@ -11,6 +11,7 @@ import landingRoutes from './landingRoutes.js';
 import teacherRoutes from './teacherRoutes.js';
 import paymentRoutes from './paymentRoutes.js';
 import essayRoutes from './essayRoutes.js';
+import adminRoutes from './adminRoutes.js';
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use('/landing', landingRoutes);
 router.use('/teacher', teacherRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/essay', essayRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

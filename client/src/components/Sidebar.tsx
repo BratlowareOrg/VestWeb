@@ -5,7 +5,7 @@ import {
   LayoutDashboard, HelpCircle, ClipboardList, Play,
   Calendar, BarChart2, Users, MessageCircle,
   Settings, LogOut, Menu, X, LucideIcon, Sun, Moon,
-  ChevronLeft, ChevronRight, PenLine,
+  ChevronLeft, ChevronRight, PenLine, ShieldCheck,
 } from 'lucide-react';
 import logo from '../assets/images/logo.png';
 import { AppDispatch, RootState } from '../store/store';
@@ -114,6 +114,16 @@ const Sidebar = ({ navItems = defaultNavItems, roleLabel }: SidebarProps) => {
               <span>{item.label}</span>
             </NavLink>
           ))}
+          {student && (student.role === 'admin' || student.role === 'teacher') && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => `sidebar-nav-item sidebar-nav-item--admin${isActive ? ' active' : ''}`}
+              onClick={() => setOpen(false)}
+            >
+              <ShieldCheck size={18} />
+              <span>Área Admin</span>
+            </NavLink>
+          )}
         </nav>
 
         <div className="sidebar-footer">

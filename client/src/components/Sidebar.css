@@ -323,3 +323,17 @@
     display: flex;
   }
 }
+
+
+.sidebar-nav-item--admin {
+  margin-top: 8px;
+  border-top: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  padding-top: 8px;
+  color: var(--accent-color, #a78bfa);
+}
+
+.sidebar-nav-item--admin:hover,
+.sidebar-nav-item--admin.active {
+  color: var(--accent-color, #a78bfa);
+  background: rgba(167, 139, 250, 0.1);
+}

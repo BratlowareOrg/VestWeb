@@ -192,7 +192,7 @@ export const submitAnswer = async (req, res) => {
       : Number.parseInt(response_time_seconds, 10);
 
     if (!Number.isInteger(sessionId) || !Number.isInteger(questionId) || !Number.isInteger(chosenAlternativeId)) {
-      return res.status(400).json({ message: 'session_id, question_id e chosen_alternative_id sao obrigatorios e devem ser numeros inteiros.' });
+      return res.status(400).json({ message: 'session_id, question_id e chosen_alternative_id são obrigatórios e devem ser numeros inteiros.' });
     }
 
     if (
@@ -200,7 +200,7 @@ export const submitAnswer = async (req, res) => {
       && response_time_seconds !== null
       && !Number.isInteger(responseTimeSeconds)
     ) {
-      return res.status(400).json({ message: 'response_time_seconds deve ser um numero inteiro.' });
+      return res.status(400).json({ message: 'response_time_seconds deve ser um número inteiro.' });
     }
 
     const t = await sequelize.transaction();
@@ -213,7 +213,7 @@ export const submitAnswer = async (req, res) => {
 
       if (!session) {
         await t.rollback();
-        return res.status(403).json({ message: 'Sessao invalida para este usuario.' });
+        return res.status(403).json({ message: 'Sessão inválida para este usuario.' });
       }
 
       const alternative = await Alternative.findOne({
@@ -328,7 +328,7 @@ export const createQuestion = async (req, res) => {
     const { statement, image_url, topic_id, difficulty, source, year, bank, alternatives } = req.body;
 
     if (!statement || !topic_id || !difficulty || !Array.isArray(alternatives) || alternatives.length < 2) {
-      return res.status(400).json({ message: 'Campos obrigatÃƒÂ³rios: statement, topic_id, difficulty, alternatives' });
+      return res.status(400).json({ message: 'Campos obrigatórios: statement, topic_id, difficulty, alternatives' });
     }
 
     const t = await sequelize.transaction();

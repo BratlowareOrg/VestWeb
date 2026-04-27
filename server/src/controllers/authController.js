@@ -59,17 +59,17 @@ export const login = async (req, res) => {
   try {
     const { enrollment, password } = req.body;
     if (!enrollment || !password) {
-      return res.status(400).json({ message: 'MatrÃƒÂ­cula e senha sÃƒÂ£o obrigatÃƒÂ³rios' });
+      return res.status(400).json({ message: 'Matrícula e senha são obrigatórios' });
     }
 
     const student = await Student.findOne({ where: { enrollment } });
     if (!student) {
-      return res.status(401).json({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
+      return res.status(401).json({ message: 'Matrícula ou senha inválidos' });
     }
 
     const isMatch = await comparePassword(password, student.password_hash);
     if (!isMatch) {
-      return res.status(401).json({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
+      return res.status(401).json({ message: 'Matrícula ou senha inválidos' });
     }
 
     const token = generateToken({ id: student.id, type: 'student' });
@@ -96,17 +96,17 @@ export const teacherLogin = async (req, res) => {
   try {
     const { enrollment, password } = req.body;
     if (!enrollment || !password) {
-      return res.status(400).json({ message: 'MatrÃƒÂ­cula e senha sÃƒÂ£o obrigatÃƒÂ³rios' });
+      return res.status(400).json({ message: 'Matrícula e senha são obrigatórios' });
     }
 
     const teacher = await Teacher.findOne({ where: { enrollment } });
     if (!teacher) {
-      return res.status(401).json({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
+      return res.status(401).json({ message: 'Matrícula ou senha inválidos' });
     }
 
     const isMatch = await comparePassword(password, teacher.password_hash);
     if (!isMatch) {
-      return res.status(401).json({ message: 'MatrÃƒÂ­cula ou senha invÃƒÂ¡lidos' });
+      return res.status(401).json({ message: 'Matrícula ou senha inválidos' });
     }
 
     const token = generateToken({ id: teacher.id, type: 'teacher' });
@@ -178,7 +178,7 @@ export const changePassword = async (req, res) => {
   try {
     const { current_password, new_password } = req.body;
     if (!current_password || !new_password) {
-      return res.status(400).json({ message: 'current_password e new_password sÃƒÂ£o obrigatÃƒÂ³rios' });
+      return res.status(400).json({ message: 'current_password e new_password são obrigatórios' });
     }
     const Model = req.user.type === 'teacher' ? Teacher : Student;
     const record = await Model.findByPk(req.user.id);

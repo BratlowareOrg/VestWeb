@@ -24,7 +24,8 @@ const TeacherRoute = ({ children }: TeacherRouteProps) => {
   }
 
   if (!user) return <Navigate to="/teacher/login" replace />;
-  if (user.type !== 'teacher') return <Navigate to="/select-platform" replace />;
+  const canAccess = user.type === 'teacher' || user.role === 'teacher' || user.role === 'admin';
+  if (!canAccess) return <Navigate to="/select-platform" replace />;
 
   return <>{children}</>;
 };
