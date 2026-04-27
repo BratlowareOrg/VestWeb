@@ -209,6 +209,7 @@ const Questions = () => {
   const [finished, setFinished] = useState(false);
   const [highlightMode, setHighlightMode] = useState(false);
   const [highlights, setHighlights] = useState<HighlightRange[]>([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const isFirstRender = useRef(true);
 
   useEffect(() => {
@@ -336,10 +337,19 @@ const Questions = () => {
     <div className="questions-page">
       <Sidebar />
       <main className="page-content">
-        <h1 style={{ marginBottom: '24px', fontSize: '24px', fontWeight: 800 }}>Banco de Questoes</h1>
+        <h1 className="questions-title">Banco de Questões</h1>
+
+        <button
+          className="questions-filter-toggle"
+          onClick={() => setFiltersOpen(o => !o)}
+          aria-expanded={filtersOpen}
+        >
+          <Filter size={15} />
+          {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
+        </button>
 
         <div className="questions-layout">
-          <div className="questions-filters">
+          <div className={`questions-filters${filtersOpen ? ' open' : ''}`}>
             <h2><Filter size={16} /> Filtros</h2>
 
             <div className="form-group">
