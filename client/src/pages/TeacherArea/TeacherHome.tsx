@@ -26,7 +26,7 @@ const TeacherHome = () => {
 
   useEffect(() => {
     const load = async () => {
-      const safe = <T>(p: Promise<T>): Promise<T | null> => p.catch(() => null);
+      const safe = <T,>(p: Promise<T>): Promise<T | null> => p.catch(() => null);
 
       const [qRes, sRes, iRes, aRes, annRes] = await Promise.all([
         safe(api.get('/teacher/questions')),

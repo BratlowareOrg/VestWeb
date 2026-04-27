@@ -161,6 +161,7 @@ app.use((err, req, res, next) => {
 });
 
 sequelize.authenticate()
+  .then(() => sequelize.sync({ force: false, alter: false }))
   .then(() => {
     app.listen(PORT, () => {
       logger.info({ event: 'server_started', port: PORT }, 'VestWeb server running');
