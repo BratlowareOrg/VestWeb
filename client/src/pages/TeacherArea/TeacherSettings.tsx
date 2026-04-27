@@ -7,6 +7,7 @@ import { RootState } from '../../store/store';
 import { updateUser } from '../../slices/authSlice';
 import { getInitials } from '../../utils/stringUtils';
 import AvatarPicker from '../../components/AvatarPicker/AvatarPicker';
+import './TeacherLayout.css';
 import '../../pages/Settings/Settings.css';
 
 const TeacherSettings = () => {

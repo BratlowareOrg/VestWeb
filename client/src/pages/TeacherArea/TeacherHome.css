@@ -1,23 +1,4 @@
-﻿.teacher-layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.teacher-main {
-  flex: 1;
-  margin-left: var(--sidebar-width);
-  min-height: 100vh;
-  background: var(--bg);
-  min-width: 0;
-  transition: margin-left 0.3s ease;
-}
-
-@media (max-width: 768px) {
-  .teacher-main {
-    margin-left: 0;
-    padding-bottom: 80px;
-  }
-}
+﻿/* layout base importado de TeacherLayout.css */
 
 /* Home */
 .teacher-home {

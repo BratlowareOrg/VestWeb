@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Clock, User } from 'lucide-react';
 import TeacherSidebar from '../../components/TeacherSidebar';
 import api from '../../api/api';
+import './TeacherLayout.css';
 import './TeacherSessions.css';
 
 interface Session {

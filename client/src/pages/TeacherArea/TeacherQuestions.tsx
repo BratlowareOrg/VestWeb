@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Plus, Trash2, Edit2, Save, X, Search, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
 import TeacherSidebar from '../../components/TeacherSidebar';
 import api from '../../api/api';
+import './TeacherLayout.css';
 import './TeacherQuestions.css';
 
 interface Alternative {
@@ -77,6 +78,7 @@ const TeacherQuestions = () => {
   const [search, setSearch]           = useState('');
   const [filterSubject, setFilterSubject] = useState('');
   const [filterDiff, setFilterDiff]   = useState('');
+  const [sortBy, setSortBy]           = useState<'recent' | 'oldest' | ''>('');
   const [page, setPage]               = useState(1);
   const [editingRow, setEditingRow]   = useState<EditRow | null>(null);
   const [saving, setSaving]           = useState(false);
@@ -103,12 +105,18 @@ const TeacherQuestions = () => {
 
   useEffect(() => { load(); }, []);
 
-  const filtered = useMemo(() => questions.filter(q => {
-    const matchSearch = !search || q.statement.toLowerCase().includes(search.toLowerCase());
-    const matchSubj   = !filterSubject || String(q.subject_id) === filterSubject;
-    const matchDiff   = !filterDiff || q.difficulty === filterDiff;
-    return matchSearch && matchSubj && matchDiff;
-  }), [questions, search, filterSubject, filterDiff]);
+  const filtered = useMemo(() => {
+    const list = questions.filter(q => {
+      const matchSearch = !search || q.statement.toLowerCase().includes(search.toLowerCase());
+      const matchSubj   = !filterSubject || String(q.subject_id) === filterSubject;
+      const matchDiff   = !filterDiff || q.difficulty === filterDiff;
+      return matchSearch && matchSubj && matchDiff;
+    });
+
+    if (sortBy === 'recent')  return [...list].sort((a, b) => b.id - a.id);
+    if (sortBy === 'oldest')  return [...list].sort((a, b) => a.id - b.id);
+    return list;
+  }, [questions, search, filterSubject, filterDiff, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -373,6 +381,11 @@ const TeacherQuestions = () => {
               <option value="easy">Fácil</option>
               <option value="medium">Médio</option>
               <option value="hard">Difícil</option>
+            </select>
+            <select value={sortBy} onChange={e => { setSortBy(e.target.value as typeof sortBy); setPage(1); }}>
+              <option value="">Ordenação padrão</option>
+              <option value="recent">Mais recentes</option>
+              <option value="oldest">Mais antigas</option>
             </select>
           </div>
 

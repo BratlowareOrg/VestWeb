@@ -50,8 +50,8 @@ export const getById = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const { role } = req.user;
-    if (role !== 'teacher' && role !== 'admin') {
+    const { role, type } = req.user;
+    if (role !== 'teacher' && type !== 'teacher' && role !== 'admin') {
       return res.status(403).json({ message: 'Forbidden' });
     }
     const { title, description, youtube_url, thumbnail_url, topic_id, published_at } = req.body;

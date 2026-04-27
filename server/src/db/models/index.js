@@ -140,8 +140,8 @@ Answer.belongsTo(QuestionSession, { foreignKey: 'session_id', as: 'session' });
 
 Answer.belongsTo(Alternative, { foreignKey: 'chosen_alternative_id', as: 'chosenAlternative' });
 
-// Video
-Video.belongsTo(Student, { foreignKey: 'created_by', as: 'creator' });
+// Video (constraints: false para permitir created_by de professor ou aluno)
+Video.belongsTo(Student, { foreignKey: 'created_by', as: 'creator', constraints: false });
 Video.hasMany(VideoProgress, { foreignKey: 'video_id', as: 'progress' });
 VideoProgress.belongsTo(Video, { foreignKey: 'video_id', as: 'video' });
 
@@ -170,6 +170,13 @@ StudentBadge.belongsTo(Badge, { foreignKey: 'badge_id', as: 'badge' });
 
 Teacher.hasMany(TeacherSession, { foreignKey: 'teacher_id', as: 'sessions' });
 TeacherSession.belongsTo(Teacher, { foreignKey: 'teacher_id', as: 'teacher' });
+
+// Teacher → Announcements / MentoringSessions diretas
+Teacher.hasMany(Announcement, { foreignKey: 'teacher_id', as: 'announcements', constraints: false });
+Announcement.belongsTo(Teacher, { foreignKey: 'teacher_id', as: 'teacher', constraints: false });
+
+Teacher.hasMany(MentoringSession, { foreignKey: 'teacher_id', as: 'mentoringSessions', constraints: false });
+MentoringSession.belongsTo(Teacher, { foreignKey: 'teacher_id', as: 'teacher', constraints: false });
 
 export {
   Student,

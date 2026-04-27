@@ -9,7 +9,11 @@ const MentoringSession = sequelize.define('MentoringSession', {
   },
   mentor_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
+  },
+  teacher_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
   },
   student_id: {
     type: DataTypes.INTEGER,

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Trash2, Edit2, Play, Youtube, X } from 'lucide-react';
 import TeacherSidebar from '../../components/TeacherSidebar';
 import api from '../../api/api';
+import './TeacherLayout.css';
 import './TeacherSinaflix.css';
 
 interface Topic {
@@ -56,12 +57,14 @@ const TeacherVestWebFlix = () => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filterSubject, setFilterSubject] = useState('');
 
   const load = async () => {
+    setLoading(true);
     try {
       const [vRes, sRes] = await Promise.all([
         api.get('/videos/my'),
@@ -70,7 +73,7 @@ const TeacherVestWebFlix = () => {
       setVideos(Array.isArray(vRes.data.data) ? vRes.data.data : []);
       setSubjects(Array.isArray(sRes.data.data) ? sRes.data.data : []);
     } catch {
-      // ignore
+      // ignora erro de carregamento
     } finally {
       setLoading(false);
     }
@@ -91,6 +94,7 @@ const TeacherVestWebFlix = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setSaveError(null);
     try {
       const payload = {
         title: form.title,
@@ -109,14 +113,16 @@ const TeacherVestWebFlix = () => {
       setShowForm(false);
       setEditingId(null);
       await load();
-    } catch {
-      // ignore
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Erro ao salvar aula. Tente novamente.';
+      setSaveError(msg);
     } finally {
       setSaving(false);
     }
   };
 
   const handleEdit = (v: Video) => {
+    setSaveError(null);
     setForm({
       title: v.title,
       description: v.description ?? '',
@@ -135,8 +141,8 @@ const TeacherVestWebFlix = () => {
     try {
       await api.delete(`/videos/${id}`);
       setVideos(prev => prev.filter(v => v.id !== id));
-    } catch {
-      // ignore
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Erro ao excluir aula.');
     }
   };
 
@@ -144,6 +150,7 @@ const TeacherVestWebFlix = () => {
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
+    setSaveError(null);
   };
 
   const previewVideoId = form.youtube_url ? getYoutubeId(form.youtube_url) : null;
@@ -266,6 +273,10 @@ const TeacherVestWebFlix = () => {
                   </div>
                 )}
               </div>
+
+              {saveError && (
+                <div className="tsf-save-error">{saveError}</div>
+              )}
 
               <div className="tqf-actions">
                 <button type="button" className="teacher-btn-secondary" onClick={cancelForm}>

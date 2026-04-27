@@ -230,7 +230,7 @@
 
 /* Header */
 .tqe-table thead tr {
-  background: #f4f5f7;
+  background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -258,15 +258,15 @@
 .tqe-table tbody tr:last-child { border-bottom: none; }
 
 .tqe-table tbody tr:hover:not(.tqe-editing) {
-  background: #fafafa;
+  background: var(--bg);
 }
 
 .tqe-table tbody tr:nth-child(even):not(.tqe-editing):not(:hover) {
-  background: #fcfcfd;
+  background: color-mix(in srgb, var(--bg) 60%, var(--white) 40%);
 }
 
 .tqe-editing {
-  background: #f0fafb !important;
+  background: var(--primary-light) !important;
   box-shadow: inset 3px 0 0 var(--primary);
 }
 

@@ -9,7 +9,11 @@ const Announcement = sequelize.define('Announcement', {
   },
   mentor_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
+  },
+  teacher_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
   },
   content: {
     type: DataTypes.TEXT,

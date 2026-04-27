@@ -9,6 +9,7 @@ import Announcements from '../../components/dashboard/Announcements';
 import UpcomingSessions from '../../components/dashboard/UpcomingSessions';
 import ImpactMetrics from '../../components/dashboard/ImpactMetrics';
 import type { SessionSummary, UpcomingSession, ActivityEvent, InsightsData, AnnouncementItem, InsightPeriod } from '../../components/dashboard/types';
+import './TeacherLayout.css';
 import './TeacherHome.css';
 
 const TeacherHome = () => {
@@ -25,37 +26,37 @@ const TeacherHome = () => {
 
   useEffect(() => {
     const load = async () => {
-      try {
-        const [qRes, sRes, iRes, aRes, annRes] = await Promise.all([
-          api.get('/teacher/questions'),
-          api.get('/teacher/sessions'),
-          api.get(`/teacher/insights?period=${period}`),
-          api.get('/teacher/activity'),
-          api.get('/teacher/announcements'),
-        ]);
-        setInsights(iRes.data.data);
-        setActivity(aRes.data.data ?? []);
-        setAnnouncements(annRes.data.data ?? []);
-        setQuestionCount(qRes.data.data.length);
-        const all: any[] = sRes.data.data;
-        setSessions({
-          total: all.length,
-          pending: all.filter(s => s.status === 'pending').length,
-          confirmed: all.filter(s => s.status === 'confirmed').length,
-          done: all.filter(s => s.status === 'done').length,
-        });
-        const now = new Date();
-        setUpcoming(
-          all
-            .filter(s => (s.status === 'pending' || s.status === 'confirmed') && new Date(s.scheduled_at) > now)
-            .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
-            .slice(0, 4)
-        );
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
+      const safe = <T>(p: Promise<T>): Promise<T | null> => p.catch(() => null);
+
+      const [qRes, sRes, iRes, aRes, annRes] = await Promise.all([
+        safe(api.get('/teacher/questions')),
+        safe(api.get('/teacher/sessions')),
+        safe(api.get(`/teacher/insights?period=${period}`)),
+        safe(api.get('/teacher/activity')),
+        safe(api.get('/teacher/announcements')),
+      ]);
+
+      if (iRes)   setInsights(iRes.data.data);
+      if (aRes)   setActivity(aRes.data.data ?? []);
+      if (annRes) setAnnouncements(annRes.data.data ?? []);
+      if (qRes)   setQuestionCount(qRes.data.data?.length ?? 0);
+
+      const all: any[] = sRes?.data.data ?? [];
+      setSessions({
+        total: all.length,
+        pending:   all.filter(s => s.status === 'pending').length,
+        confirmed: all.filter(s => s.status === 'confirmed').length,
+        done:      all.filter(s => s.status === 'done').length,
+      });
+      const now = new Date();
+      setUpcoming(
+        all
+          .filter(s => (s.status === 'pending' || s.status === 'confirmed') && new Date(s.scheduled_at) > now)
+          .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+          .slice(0, 4)
+      );
+
+      setLoading(false);
     };
     load();
   }, []);

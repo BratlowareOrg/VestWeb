@@ -13,6 +13,7 @@
     "normalize": "node scripts/normalize-all.js",
     "clear:questions": "node scripts/clear-questions.js",
     "migrate": "node scripts/migrate-add-columns.js",
+    "migrate:teacher": "node scripts/migrate-teacher-columns.js",
     "seed:sample-simulations": "node scripts/create-sample-simulations.js",
     "import": "node scripts/import.js",
     "import:all": "node scripts/import-all.js",
