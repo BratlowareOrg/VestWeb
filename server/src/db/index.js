@@ -33,7 +33,7 @@ const sequelize = DATABASE_URL
       port: parseInt(DB_PORT, 10),
       dialect: 'postgres',
       logging: isProd ? false : console.log,
-      ...(isProd && { dialectOptions: sslOptions }),
+      dialectOptions: sslOptions,
       pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
     });
 
