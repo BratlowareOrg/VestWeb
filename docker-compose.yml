@@ -38,7 +38,7 @@ services:
       DB_PASSWORD: postgres123
       JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_mude_em_producao}
       JWT_EXPIRES_IN: '7d'
-      CLIENT_URL: 'http://localhost,http://localhost:5173,http://localhost:4173'
+      CLIENT_URL: 'http://localhost,http://localhost:5173,http://localhost:4173,http://2.24.108.221,http://srv1683317.hstgr.cloud'
       EMAIL_USER: ${EMAIL_USER:-}
       EMAIL_PASS: ${EMAIL_PASS:-}
       EMAIL_TO: ${EMAIL_TO:-}
@@ -58,10 +58,12 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://2.24.108.221/api/v1
     container_name: vestweb_frontend
     restart: unless-stopped
     ports:
-      - '80:80'
+      - '8081:80'
     depends_on:
       - backend
 
