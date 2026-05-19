@@ -19,7 +19,8 @@ const {
 } = process.env;
 
 const isProd = NODE_ENV === 'production';
-const sslOptions = { ssl: { require: true, rejectUnauthorized: false } };
+const isRemote = DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1';
+const sslOptions = isProd || isRemote ? { ssl: { require: true, rejectUnauthorized: false } } : {};
 
 const sequelize = DATABASE_URL
   ? new Sequelize(DATABASE_URL, {
